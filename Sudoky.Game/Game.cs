@@ -94,33 +94,68 @@ namespace GEB.Sudoku
             mask = mask | GetBitMaskForColumn(col);
             mask = mask | GetBitMaskForGrid(row / gridSize, col / gridSize);
             return mask;
+        
         }
 
-        public GridValueEnum compareBitMaskToOtherSquares(int anchorRow, int anchorCol, GridValueEnum currMask)
+        public GridValueEnum GetValueForSquare(int row, int col)
         {
-            GridValueEnum mask = 0;
+            GridValueEnum mask = getPossibleValuesForRowCol(row, col);
+        }
+
+        private bool IsValuePresentInOtherSquares(int anchorRow, int anchorCol, GridValueEnum value)
+        {
             for (int i = 0; i < gridSize; i++)
             {
                 for (int j = 0; j < gridSize; j++)
                 {
-                    if (board[i, j] == GridValueEnum.Blank)
+                    int row = i + (anchorRow * gridSize);
+                    int col = j + (anchorCol * gridSize);
+                    if (board[row, col] == GridValueEnum.Blank)
                     {
-                        mask = getPossibleValuesForRowCol(i, j);
-                        for (int k = 0; k < boardSize + 1; k++)
+                        GridValueEnum mask = getPossibleValuesForRowCol(row, col);
+                        if(IsBitSet((int)value, (int)mask))
                         {
-                            if ((((int)currMask & (1 << k)) != 0) && (((int)mask & (1 << k)) == 0))
+                            return false;
+                        }
+                    }
+                }
+            }
+            return true;
+        }
+
+        public GridValueEnum compareBitMaskToOtherSquares(int anchorRow, int anchorCol, GridValueEnum currentSpaceMask)
+        {
+            // Ignore test for Blank
+            currentSpaceMask &= ~GridValueEnum.Blank;
+            for (int i = 0; i < gridSize; i++)
+            {
+                for (int j = 0; j < gridSize; j++)
+                {
+                    int row = i + (anchorRow * gridSize);
+                    int col = j + (anchorCol * gridSize);
+                    if (board[row,col] == GridValueEnum.Blank)
+                    {
+                        GridValueEnum nextSpaceMask = getPossibleValuesForRowCol(row, col);
+                        nextSpaceMask &= ~GridValueEnum.Blank;
+                        for (int k = 1; k < boardSize + 1; k++)
+                        {
+                            if (IsBitSet((int)currentSpaceMask, 1 << k))
                             {
-                                (int)currMask |= 1 << k;
-                            }
-                            else
-                            {
-                                (int)currMask &= 0 << k;
+                                if(IsBitSet((int)nextSpaceMask, 1 << k))
+                                {
+                                    break;
+                                }
                             }
                         }
                     }
                 }
             }
-            return currMask;
+            return currentSpaceMask;
+        }
+
+        private bool IsBitSet(int value, int mask)
+        {
+            return ((value & mask) != 0);
         }
 
         public bool isBoardSolved()
