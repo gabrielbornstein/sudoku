@@ -30,7 +30,7 @@ namespace Tests
             GridValueEnum value = currGame.GetGridValue(6, 8);
             System.Console.WriteLine(board1[6, 8]);
             System.Console.WriteLine(value);
-            //Assert.AreEqual(value, GridValueEnum.Digit_4);
+            Assert.AreEqual(GridValueEnum.Digit_4, value);
         }
     }
 }
