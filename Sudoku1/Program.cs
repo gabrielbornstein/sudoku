@@ -1,5 +1,6 @@
 ﻿using System;
 using GEB.Sudoku;
+using Tests;
 
 namespace GEB
 {
@@ -8,8 +9,8 @@ namespace GEB
         static void Main(string[] args)
         {
             Console.WriteLine("Hello World!");
-            Game myGame = new Game();
-            myGame.GetGridValue
+            Testing testing = new Testing();
+            testing.Test1();
         }
     }
 }

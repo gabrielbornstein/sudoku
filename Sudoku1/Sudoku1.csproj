@@ -7,5 +7,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Sudoky.Game\Sudoku.Game.csproj" />
+    <ProjectReference Include="..\testSuite\testSuite.csproj" />
   </ItemGroup>
 </Project>

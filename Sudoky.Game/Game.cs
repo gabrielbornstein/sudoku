@@ -29,7 +29,7 @@ namespace GEB.Sudoku
         {
             GridValueEnum mask = GetBitMaskForRow(row);
             mask = mask | GetBitMaskForColumn(col);
-            mask = mask | GetBitMaskForGrid(row / 3, col / 3);
+            mask = mask | GetBitMaskForGrid(row / gridSize, col / gridSize);
             return IsGridValueKnown(mask);
         }
 
@@ -89,8 +89,21 @@ namespace GEB.Sudoku
                     result = 1 << i;
                 }
             }
-
+             
             return (result != -1) ? (GridValueEnum) result : GridValueEnum.Blank;
+        }
+
+        public bool isBoardSolved()
+        {
+            for (int i = 0; i < boardSize; i++)
+            {
+                for (int j = 0; j < boardSize; j++)
+                {
+                    if (board[i, j] == GridValueEnum.Blank)
+                        return false;
+                }
+            }
+            return true;
         }
     }
 }
