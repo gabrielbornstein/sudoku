@@ -30,7 +30,8 @@ namespace GEB.Sudoku
             GridValueEnum mask = GetBitMaskForRow(row);
             mask = mask | GetBitMaskForColumn(col);
             mask = mask | GetBitMaskForGrid(row / gridSize, col / gridSize);
-            return IsGridValueKnown(mask);
+            board[row,col] = GetValueForRowCol(mask);
+            return board[row, col];
         }
 
         private GridValueEnum GetBitMaskForRow(int row)
@@ -38,10 +39,7 @@ namespace GEB.Sudoku
             GridValueEnum mask = 0;
             for(int i=0;i<boardSize;i++)
             {
-                if (board[row, i] != GridValueEnum.Blank)
-                {
-                    mask |= board[row, i];
-                }
+                mask |= board[row, i];
             }
             return mask;
         }
@@ -51,10 +49,7 @@ namespace GEB.Sudoku
             GridValueEnum mask = 0;
             for(int i = 0; i < boardSize; i++)
             {
-                if (board[i, col] != GridValueEnum.Blank)
-                {
-                    mask |= board[i, col];
-                }
+                mask |= board[i, col];
             }
             return mask;
         }
@@ -62,20 +57,20 @@ namespace GEB.Sudoku
         private GridValueEnum GetBitMaskForGrid(int anchorRow, int anchorCol)
         {
             GridValueEnum mask = 0;
-            for (int i = anchorRow; i < anchorRow + gridSize; i++)
+            for (int i = 0; i < gridSize; i++)
             {
-                for (int j = anchorCol; j < anchorCol + gridSize; j++)
+                for (int j = 0; j < gridSize; j++)
                 {
-                    if (board[i, j] != GridValueEnum.Blank)
+                    if (board[(anchorRow * gridSize) + i, (anchorCol * gridSize) + j] != GridValueEnum.Blank)
                     {
-                        mask |= board[i, j];
+                        mask |= board[(anchorRow * gridSize) + i, (anchorCol * gridSize) + j];
                     }
                 }
             }
             return mask;
         }
 
-        private GridValueEnum IsGridValueKnown(GridValueEnum currMask)
+        private GridValueEnum GetValueForRowCol(GridValueEnum currMask)
         {
             int result = -1;
 
