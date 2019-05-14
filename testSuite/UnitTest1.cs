@@ -28,11 +28,6 @@ namespace Tests
 
             Game currGame = new Game(board1);
             GridValueEnum value = currGame.GetGridValue(6, 8);
-<<<<<<< HEAD
-            System.Console.WriteLine(board1[6, 8]);
-            System.Console.WriteLine(value);
-            Assert.AreEqual(GridValueEnum.Digit_4, value);
-=======
             Assert.AreEqual(value, GridValueEnum.Digit_3);
         }
 
@@ -55,7 +50,6 @@ namespace Tests
             Game currGame = new Game(board1);
             GridValueEnum value = currGame.GetGridValue(6, 8);
             Assert.AreEqual(value, GridValueEnum.Digit_4);
->>>>>>> 6cfe37f868953e937ea7170cc2144d5f5862c879
         }
     }
 }

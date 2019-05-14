@@ -88,6 +88,41 @@ namespace GEB.Sudoku
             return (result != -1) ? (GridValueEnum) result : GridValueEnum.Blank;
         }
 
+        private GridValueEnum getPossibleValuesForRowCol(int row, int col)
+        {
+            GridValueEnum mask = GetBitMaskForRow(row);
+            mask = mask | GetBitMaskForColumn(col);
+            mask = mask | GetBitMaskForGrid(row / gridSize, col / gridSize);
+            return mask;
+        }
+
+        public GridValueEnum compareBitMaskToOtherSquares(int anchorRow, int anchorCol, GridValueEnum currMask)
+        {
+            GridValueEnum mask = 0;
+            for (int i = 0; i < gridSize; i++)
+            {
+                for (int j = 0; j < gridSize; j++)
+                {
+                    if (board[i, j] == GridValueEnum.Blank)
+                    {
+                        mask = getPossibleValuesForRowCol(i, j);
+                        for (int k = 0; k < boardSize + 1; k++)
+                        {
+                            if ((((int)currMask & (1 << k)) != 0) && (((int)mask & (1 << k)) == 0))
+                            {
+                                (int)currMask |= 1 << k;
+                            }
+                            else
+                            {
+                                (int)currMask &= 0 << k;
+                            }
+                        }
+                    }
+                }
+            }
+            return currMask;
+        }
+
         public bool isBoardSolved()
         {
             for (int i = 0; i < boardSize; i++)
