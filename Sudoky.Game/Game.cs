@@ -34,14 +34,17 @@ namespace GEB.Sudoku
                 {
                     for (int j = 0; j < boardSize; j++)
                     {
-                        GridValueEnum value = GetGridValue(i, j);
-                        if (value == GridValueEnum.Blank)
+                        if (board[i, j] == GridValueEnum.Blank)
                         {
-                            board[i, j] = GetValueForSquare(i, j);
-                        }
-                        else
-                        {
-                            board[i, j] = value;
+                            GridValueEnum value = GetGridValue(i, j);
+                            if (value == GridValueEnum.Blank)
+                            {
+                                board[i, j] = GetValueForSquare(i, j);
+                            }
+                            else
+                            {
+                                board[i, j] = value;
+                            }
                         }
                     }
                 }

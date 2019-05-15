@@ -27,8 +27,9 @@ namespace GEB
             {
                 for (int j = 0; j < 9; j++)
                 {
-                    Console.WriteLine(currGame.board[i,j]);
+                    Console.Write(currGame.board[i,j] + " ");
                 }
+                Console.WriteLine();
             }
         }
     }
