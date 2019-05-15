@@ -22,9 +22,14 @@ namespace GEB
             };
 
             Game currGame = new Game(board1);
-            GridValueEnum value = currGame.GetGridValue(6, 8);
-            System.Console.WriteLine(board1[6, 8]);
-            System.Console.WriteLine(value);
+            currGame.SolveEntireBoard();
+            for (int i = 0; i < 9; i++)
+            {
+                for (int j = 0; j < 9; j++)
+                {
+                    Console.WriteLine(currGame.board[i,j]);
+                }
+            }
         }
     }
 }

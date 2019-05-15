@@ -6,7 +6,7 @@ namespace GEB.Sudoku
     {
         const int gridSize = 3;
         const int boardSize = gridSize * gridSize;
-        GridValueEnum[,] board = null;
+        public GridValueEnum[,] board { get; set; } = null;
 
         public Game()
         {
@@ -23,6 +23,30 @@ namespace GEB.Sudoku
         public Game(GridValueEnum[,] initBoard)
         {
             board = initBoard;
+        }
+
+        public void SolveEntireBoard()
+        {
+            int k = 0;
+            while  (k < 3500)            // (!BoardSolved())
+            {
+                for (int i = 0; i < boardSize; i++)
+                {
+                    for (int j = 0; j < boardSize; j++)
+                    {
+                        GridValueEnum value = GetGridValue(i, j);
+                        if (value == GridValueEnum.Blank)
+                        {
+                            board[i, j] = GetValueForSquare(i, j);
+                        }
+                        else
+                        {
+                            board[i, j] = value;
+                        }
+                    }
+                }
+                k++;
+            }
         }
 
         public GridValueEnum GetGridValue(int row, int col)
@@ -61,7 +85,6 @@ namespace GEB.Sudoku
             {
                 for (int j = 0; j < gridSize; j++)
                 {
-                    if (board[(anchorRow * gridSize) + i, (anchorCol * gridSize) + j] != GridValueEnum.Blank)
                     {
                         mask |= board[(anchorRow * gridSize) + i, (anchorCol * gridSize) + j];
                     }
@@ -88,41 +111,70 @@ namespace GEB.Sudoku
             return (result != -1) ? (GridValueEnum) result : GridValueEnum.Blank;
         }
 
-        private GridValueEnum getPossibleValuesForRowCol(int row, int col)
+        private GridValueEnum GetPossibleValuesForRowCol(int row, int col)
         {
             GridValueEnum mask = GetBitMaskForRow(row);
             mask = mask | GetBitMaskForColumn(col);
             mask = mask | GetBitMaskForGrid(row / gridSize, col / gridSize);
+            mask = ~(mask) & (GridValueEnum)0x3ff;
             return mask;
-        
         }
 
         public GridValueEnum GetValueForSquare(int row, int col)
         {
-            GridValueEnum mask = getPossibleValuesForRowCol(row, col);
+            GridValueEnum mask = GetPossibleValuesForRowCol(row, col);
+            for (int i = 1; i < boardSize + 1; i++)
+            {
+                if (((int)mask & 1 << i) != 0)
+                {
+                    if (!IsValuePresentInOtherSquares(row / gridSize, col / gridSize, row, col, (GridValueEnum)(1 << i)))
+                    {
+                        return (GridValueEnum)(1 << i);
+                    }
+                }
+            }
+            return GridValueEnum.Blank;
         }
 
-        private bool IsValuePresentInOtherSquares(int anchorRow, int anchorCol, GridValueEnum value)
+        private bool IsValuePresentInOtherSquares(int anchorRow, int anchorCol, int row, int col, GridValueEnum value)
         {
             for (int i = 0; i < gridSize; i++)
             {
                 for (int j = 0; j < gridSize; j++)
                 {
-                    int row = i + (anchorRow * gridSize);
-                    int col = j + (anchorCol * gridSize);
-                    if (board[row, col] == GridValueEnum.Blank)
+                    int currRow = i + (anchorRow * gridSize);
+                    int currCol = j + (anchorCol * gridSize);
+                    if (board[currRow, currCol] == GridValueEnum.Blank)
                     {
-                        GridValueEnum mask = getPossibleValuesForRowCol(row, col);
-                        if(IsBitSet((int)value, (int)mask))
+                        GridValueEnum mask = GetPossibleValuesForRowCol(currRow, currCol);
+                        if(IsBitSet((int)value, (int)mask) && (currRow != row && currCol != col))
                         {
-                            return false;
+                            return true;
                         }
                     }
                 }
             }
-            return true;
+            return false;
         }
 
+        private bool IsBitSet(int value, int mask)
+        {
+            return ((value & mask) != 0);
+        }
+
+        private bool BoardSolved()
+        {
+            for (int i = 0; i < boardSize; i++)
+            {
+                for (int j = 0; j < boardSize; j++)
+                {
+                    if (board[i, j] == GridValueEnum.Blank)
+                        return false;
+                }
+            }
+            return true;
+        }
+        /*
         public GridValueEnum compareBitMaskToOtherSquares(int anchorRow, int anchorCol, GridValueEnum currentSpaceMask)
         {
             // Ignore test for Blank
@@ -152,23 +204,6 @@ namespace GEB.Sudoku
             }
             return currentSpaceMask;
         }
-
-        private bool IsBitSet(int value, int mask)
-        {
-            return ((value & mask) != 0);
-        }
-
-        public bool isBoardSolved()
-        {
-            for (int i = 0; i < boardSize; i++)
-            {
-                for (int j = 0; j < boardSize; j++)
-                {
-                    if (board[i, j] == GridValueEnum.Blank)
-                        return false;
-                }
-            }
-            return true;
-        }
+        */
     }
 }
