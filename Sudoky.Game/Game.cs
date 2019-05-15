@@ -45,6 +45,10 @@ namespace GEB.Sudoku
                             {
                                 board[i, j] = value;
                             }
+                            if (board[i, j] != GridValueEnum.Blank)
+                            {
+                                Console.WriteLine("Set Board: Row {0}, Column {1}, Value = {2}", i, j, board[i, j]);
+                            }
                         }
                     }
                 }
@@ -57,8 +61,7 @@ namespace GEB.Sudoku
             GridValueEnum mask = GetBitMaskForRow(row);
             mask = mask | GetBitMaskForColumn(col);
             mask = mask | GetBitMaskForGrid(row / gridSize, col / gridSize);
-            board[row,col] = GetValueForRowCol(mask);
-            return board[row, col];
+            return GetValueForRowCol(mask);
         }
 
         private GridValueEnum GetBitMaskForRow(int row)
@@ -147,12 +150,15 @@ namespace GEB.Sudoku
                 {
                     int currRow = i + (anchorRow * gridSize);
                     int currCol = j + (anchorCol * gridSize);
-                    if (board[currRow, currCol] == GridValueEnum.Blank)
+                    if (!(currRow == row && currCol == col))
                     {
-                        GridValueEnum mask = GetPossibleValuesForRowCol(currRow, currCol);
-                        if(IsBitSet((int)value, (int)mask) && (currRow != row && currCol != col))
+                        if (board[currRow, currCol] == GridValueEnum.Blank)
                         {
-                            return true;
+                            GridValueEnum mask = GetPossibleValuesForRowCol(currRow, currCol);
+                            if (IsBitSet((int)value, (int)mask))
+                            {
+                                return true;
+                            }
                         }
                     }
                 }
