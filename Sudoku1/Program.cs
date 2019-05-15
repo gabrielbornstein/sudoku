@@ -22,6 +22,7 @@ namespace GEB
             };
 
             Game currGame = new Game(board1);
+            currGame.NotifyBoardUpdatedEvent += NotifyBoardUpdated;
             currGame.SolveEntireBoard();
             for (int i = 0; i < 9; i++)
             {
@@ -31,6 +32,11 @@ namespace GEB
                 }
                 Console.WriteLine();
             }
+        }
+
+        public static void NotifyBoardUpdated(Game sender, BoardUpdatedEventArgs evtArgs)
+        {
+            Console.WriteLine("Set Board: Row {0}, Column {1}, Value = {2}", evtArgs.row, evtArgs.col, evtArgs.value);
         }
     }
 }

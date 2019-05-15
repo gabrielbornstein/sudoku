@@ -2,11 +2,21 @@ using System;
 
 namespace GEB.Sudoku
 {
+    public class BoardUpdatedEventArgs : EventArgs
+    {
+        public int row { get; set; }
+        public int col { get; set; }
+        public GridValueEnum value { get; set; }
+    }
+
     public class Game
     {
         const int gridSize = 3;
         const int boardSize = gridSize * gridSize;
         public GridValueEnum[,] board { get; set; } = null;
+
+        public delegate void NotifyBoardUpdated(Game sender, BoardUpdatedEventArgs evtArgs);
+        public event NotifyBoardUpdated NotifyBoardUpdatedEvent;
 
         public Game()
         {
@@ -27,17 +37,20 @@ namespace GEB.Sudoku
 
         public void SolveEntireBoard()
         {
-            int k = 0;
-            int numBlanks = -1;
-            while (!BoardIsSolved())
+            int currNumBlanks = 0;
+            int prevNumBlanks = 0;
+            do
             {
+                prevNumBlanks = currNumBlanks;
+                currNumBlanks = 0;
+
                 for (int i = 0; i < boardSize; i++)
                 {
                     for (int j = 0; j < boardSize; j++)
                     {
                         if (board[i, j] == GridValueEnum.Blank)
                         {
-                            k++;
+                            currNumBlanks++;
                             GridValueEnum value = GetGridValue(i, j);
                             if (value == GridValueEnum.Blank)
                             {
@@ -49,19 +62,22 @@ namespace GEB.Sudoku
                             }
                             if (board[i, j] != GridValueEnum.Blank)
                             {
-                                Console.WriteLine("Set Board: Row {0}, Column {1}, Value = {2}", i, j, board[i, j]);
+                                // Notify that the board changed
+                                if (NotifyBoardUpdatedEvent != null)
+                                {
+                                    NotifyBoardUpdatedEvent(this, new BoardUpdatedEventArgs()
+                                    {
+                                        row = i,
+                                        col = j,
+                                        value = board[i,j]
+                                    });
+                                }
                             }
                         }
                     }
                 }
-                if (k == numBlanks)
-                {
-                    Console.WriteLine("Problem: Board cannot be solved with current algorithm");
-                    break;
-                }
-                numBlanks = k;
-                k = 0;
-            }
+            } while (!BoardIsSolved() && currNumBlanks != prevNumBlanks);
+            Console.WriteLine("Board {0}", (BoardIsSolved()) ? "Solved" : "Not Solved");
         }
 
         public GridValueEnum GetGridValue(int row, int col)
@@ -69,11 +85,7 @@ namespace GEB.Sudoku
             GridValueEnum mask = GetBitMaskForRow(row);
             mask = mask | GetBitMaskForColumn(col);
             mask = mask | GetBitMaskForGrid(row / gridSize, col / gridSize);
-<<<<<<< HEAD
             return GetValueForRowCol(mask);
-=======
-            board[row,col] = GetValueForRowCol(mask);
-            return board[row, col];
         }
 
         public GridValueEnum GetValueForSquare(int row, int col)
@@ -103,7 +115,6 @@ namespace GEB.Sudoku
                 }
             }
             return true;
->>>>>>> 6b29b45... * Program.cs: Cleaned up solution
         }
 
         private GridValueEnum GetBitMaskForRow(int row)
@@ -173,20 +184,6 @@ namespace GEB.Sudoku
             {
                 for (int j = 0; j < gridSize; j++)
                 {
-<<<<<<< HEAD
-                    int currRow = i + (anchorRow * gridSize);
-                    int currCol = j + (anchorCol * gridSize);
-                    if (!(currRow == row && currCol == col))
-                    {
-                        if (board[currRow, currCol] == GridValueEnum.Blank)
-                        {
-                            GridValueEnum mask = GetPossibleValuesForRowCol(currRow, currCol);
-                            if (IsBitSet((int)value, (int)mask))
-                            {
-                                return true;
-                            }
-                        }
-=======
                     int currRow = i + ((row / gridSize) * gridSize);
                     int currCol = j + ((col / gridSize) * gridSize);
                     if (!(currRow == row && currCol == col))
@@ -199,7 +196,6 @@ namespace GEB.Sudoku
                                 return true;
                             }
                         }
->>>>>>> 6b29b45... * Program.cs: Cleaned up solution
                     }
                 }
             }
