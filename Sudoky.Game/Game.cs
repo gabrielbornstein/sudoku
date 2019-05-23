@@ -21,12 +21,12 @@ namespace GEB.Sudoku
 
         public Game()
         {
-            board = new GridValueEnum[boardSize,boardSize];
+            board = new GridValueEnum[boardSize, boardSize];
             for (int i = 0; i < boardSize; i++)
             {
-                for(int j = 0; j < boardSize; j++)
+                for (int j = 0; j < boardSize; j++)
                 {
-                    board[i,j] = GridValueEnum.Blank;
+                    board[i, j] = GridValueEnum.Blank;
                 }
             }
         }
@@ -70,7 +70,7 @@ namespace GEB.Sudoku
                                     {
                                         row = i,
                                         col = j,
-                                        value = board[i,j]
+                                        value = board[i, j]
                                     });
                                 }
                             }
@@ -121,7 +121,7 @@ namespace GEB.Sudoku
         private GridValueEnum GetBitMaskForRow(int row)
         {
             GridValueEnum mask = 0;
-            for(int i = 0; i < boardSize; i++)
+            for (int i = 0; i < boardSize; i++)
             {
                 mask |= board[row, i];
             }
@@ -131,7 +131,7 @@ namespace GEB.Sudoku
         private GridValueEnum GetBitMaskForColumn(int col)
         {
             GridValueEnum mask = 0;
-            for(int i = 0; i < boardSize; i++)
+            for (int i = 0; i < boardSize; i++)
             {
                 mask |= board[i, col];
             }
@@ -167,7 +167,7 @@ namespace GEB.Sudoku
                     result = 1 << i;
                 }
             }
-            return (result != -1) ? (GridValueEnum) result : GridValueEnum.Blank;
+            return (result != -1) ? (GridValueEnum)result : GridValueEnum.Blank;
         }
 
         private GridValueEnum GetPossibleValuesForRowCol(int row, int col)
@@ -210,44 +210,60 @@ namespace GEB.Sudoku
 
         #region Interface Implementation
 
-        public Dictionary<string, Player> IDPlayerDict = new Dictionary<string, Player>();
-
-        public Player RegisterPlayer(string playerName)
-        {
-            Player player = new Player();
-            player.PlayerName = playerName;
-            player.gamesPlayed = 0;
-            player.gamesFinished = 0;
-            player.score = 0;
-            player.Error = GameErrorEnum.OK;
-
-            //generate user ID
-            Guid g = new Guid();
-            player.PlayerId = g.ToString();
-            IDPlayerDict.Add(g.ToString(), player);
-
-            return player;
-        }
+        public static Dictionary<string, Player> IDPlayerDict = new Dictionary<string, Player>();
 
         public GameResult DeletePlayer(string playerId)
         {
-            IDPlayerDict.Remove(playerId);
-            GameResult result = new GameResult();
-            result.Result = true;
-            result.Error = GameErrorEnum.OK;
+            Player pl = GetPlayer(playerId);
+            if (pl != null)
+            {
+                IDPlayerDict.Remove(playerId);
+            }
 
-            return result;
+            return new GameResult()
+            {
+                Error = (pl != null) ? GameErrorEnum.OK : GameErrorEnum.InvalidPlayerID,
+                Result = (pl != null)
+            };
         }
 
         public GameResult RenamePlayer(string playerId, string playerName)
         {
-            Player player = IDPlayerDict[playerId];
-            player.PlayerName = playerName;
-            GameResult result = new GameResult();
-            result.Result = true;
-            result.Error = GameErrorEnum.OK;
+            Player pl = GetPlayer(playerId);
+            if (pl != null)
+            {
+                pl.PlayerName = playerName;
+            }
 
-            return result;
+            return new GameResult()
+            {
+                Error = (pl != null) ? GameErrorEnum.OK : GameErrorEnum.InvalidPlayerID,
+                Result = (pl != null)
+            };
+        }
+
+        public Player GetPlayer(string playerId)
+        {
+            Player tmpPlayer;
+            return (IDPlayerDict.TryGetValue(playerId, out tmpPlayer)) ? tmpPlayer : null;
+        }
+
+        public Player RegisterPlayer(string name)
+        {
+            Player player = new Player()
+            {
+                PlayerName = name,
+                GamesPlayed = 0,
+                GamesFinished = 0,
+                Score = 0,
+                Error = GameErrorEnum.OK
+            };
+
+            //generate user ID
+            player.PlayerId = Guid.NewGuid().ToString();
+            IDPlayerDict.Add(player.PlayerId, player);
+
+            return player;
         }
 
         public GameStatus CreateNewGame(GameConfig config)
@@ -289,8 +305,10 @@ namespace GEB.Sudoku
         {
             throw new NotImplementedException();
         }
+
+        #endregion
     }
 
-#endregion
+
 
 }

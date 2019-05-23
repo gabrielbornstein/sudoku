@@ -22,9 +22,9 @@ namespace GEB.Sudoku
     {
         public string PlayerId { get; set; }
         public string PlayerName { get; set; }
-        public int gamesPlayed { get; set; }
-        public int gamesFinished { get; set; }
-        public int score { get; set; }
+        public int GamesPlayed { get; set; }
+        public int GamesFinished { get; set; }
+        public int Score { get; set; }
     }
 
     public class BoardPosition : GameError
@@ -66,6 +66,7 @@ namespace GEB.Sudoku
     {
         // Player management
         Player RegisterPlayer(string playerName);
+        Player GetPlayer(string playerId);
         GameResult DeletePlayer(string playerId);
         GameResult RenamePlayer(string playerId, string playerName);
 

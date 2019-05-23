@@ -4,10 +4,11 @@ using GEB.Sudoku;
 namespace Tests
 {
     public class Testing
-    {
+    { 
         [SetUp]
         public void Setup()
         { 
+
         }
 
         [Test]
@@ -91,5 +92,40 @@ namespace Tests
             GridValueEnum value = currGame.GetValueForSquare(5, 2);
             Assert.AreEqual(GridValueEnum.Digit_3, value);
         }
+
+        // Player Testing
+        #region Player Testing
+
+        [Test]
+        public void TestPlayer()
+        {
+            Game myGame = new Game();
+
+            Player dk = myGame.RegisterPlayer("David Krinker");
+            Player gb = myGame.RegisterPlayer("Gabriel Bornstein");
+
+            // Now make sure we can query player
+            Player dk1 = myGame.GetPlayer(dk.PlayerId);
+            Assert.AreEqual(dk, dk1);
+
+            Player gb1 = myGame.GetPlayer(gb.PlayerId);
+            Assert.AreEqual(gb, gb1);
+
+            Assert.AreNotEqual(dk, gb);
+
+            // Try new Game
+            Game myGame2 = new Game();
+
+            dk1 = myGame2.GetPlayer(dk.PlayerId);
+            Assert.AreEqual(dk, dk1);
+
+            GameResult result = myGame2.DeletePlayer(dk.PlayerId);
+            Assert.IsTrue(result.Result);
+
+            dk1 = myGame2.GetPlayer(dk.PlayerId);
+            Assert.IsNull(dk1);
+
+        }
+        #endregion
     }
 }
