@@ -208,21 +208,46 @@ namespace GEB.Sudoku
             return ((value & mask) != 0);
         }
 
-#region Interface Implementation
+        #region Interface Implementation
+
+        public Dictionary<string, Player> IDPlayerDict = new Dictionary<string, Player>();
 
         public Player RegisterPlayer(string playerName)
         {
-            throw new NotImplementedException();
+            Player player = new Player();
+            player.PlayerName = playerName;
+            player.gamesPlayed = 0;
+            player.gamesFinished = 0;
+            player.score = 0;
+            player.Error = GameErrorEnum.OK;
+
+            //generate user ID
+            Guid g = new Guid();
+            player.PlayerId = g.ToString();
+            IDPlayerDict.Add(g.ToString(), player);
+
+            return player;
         }
 
         public GameResult DeletePlayer(string playerId)
         {
-            throw new NotImplementedException();
+            IDPlayerDict.Remove(playerId);
+            GameResult result = new GameResult();
+            result.Result = true;
+            result.Error = GameErrorEnum.OK;
+
+            return result;
         }
 
         public GameResult RenamePlayer(string playerId, string playerName)
         {
-            throw new NotImplementedException();
+            Player player = IDPlayerDict[playerId];
+            player.PlayerName = playerName;
+            GameResult result = new GameResult();
+            result.Result = true;
+            result.Error = GameErrorEnum.OK;
+
+            return result;
         }
 
         public GameStatus CreateNewGame(GameConfig config)
