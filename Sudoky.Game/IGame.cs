@@ -15,52 +15,51 @@ namespace GEB.Sudoku
 
     public class GameError
     {
-        GameErrorEnum Error { get; set; }
+        public GameErrorEnum Error { get; set; }
     }
 
     public class Player: GameError
     {
-        string PlayerId { get; set; }
-        string PlayerName { get; set; }
-        int gamesPlayed { get; set; }
-        int gamesFinished { get; set; }
-        int score { get; set; }
+        public string PlayerId { get; set; }
+        public string PlayerName { get; set; }
+        public int gamesPlayed { get; set; }
+        public int gamesFinished { get; set; }
+        public int score { get; set; }
     }
 
     public class BoardPosition : GameError
     {
-        int Row { get; set; }
-        int Column { get; set; }
+        public int Row { get; set; }
+        public int Column { get; set; }
     }
 
     public class BoardMove : BoardPosition
     {
-        int Value { get; set; }
-        String PlayerId { get; set; }
+        public int Value { get; set; }
+        public String PlayerId { get; set; }
     }
 
     public class GameConfig : GameError
     {
-        int GridSize { get; set; }          // Supports 3x3, 4x4, etc
-        int[,] InitBoard { get; set; }      // Optional
-        String Player1Id { get; set; }
-        String Player2Id { get; set; }      // Optional
-        int MaxTimePerMove { get; set; }    // Optional - defaults to 0 or no timeout
-        bool EnableAssistMode { get; set; } // Optional - defaults to false
+        public int[,] InitBoard { get; set; }      // Optional
+        public String Player1Id { get; set; }
+        public String Player2Id { get; set; }      // Optional
+        public int MaxTimePerMove { get; set; }    // Optional - defaults to 0 or no timeout
+        public bool EnableAssistMode { get; set; } // Optional - defaults to false
     }
 
     public class GameStatus : GameError
     {
-        String GameId { get; set; }
-        int[,] Board { get; set; }
-        String NextPlayerId { get; set; }
-        BoardMove LastMove { get; set; }
-        bool GamePaused { get; set; }
+        public String GameId { get; set; }
+        public int[,] Board { get; set; }
+        public String NextPlayerId { get; set; }
+        public BoardMove LastMove { get; set; }
+        public bool GamePaused { get; set; }
     }
 
     public class GameResult : GameError
     {
-        bool Result { get; set; }
+        public bool Result { get; set; }
     }
 
     public interface IGame

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace GEB.Sudoku
 {
@@ -9,7 +10,7 @@ namespace GEB.Sudoku
         public GridValueEnum value { get; set; }
     }
 
-    public class Game
+    public class Game : IGame
     {
         const int gridSize = 3;
         const int boardSize = gridSize * gridSize;
@@ -207,5 +208,64 @@ namespace GEB.Sudoku
             return ((value & mask) != 0);
         }
 
+#region Interface Implementation
+
+        public Player RegisterPlayer(string playerName)
+        {
+            throw new NotImplementedException();
+        }
+
+        public GameResult DeletePlayer(string playerId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public GameResult RenamePlayer(string playerId, string playerName)
+        {
+            throw new NotImplementedException();
+        }
+
+        public GameStatus CreateNewGame(GameConfig config)
+        {
+            throw new NotImplementedException();
+        }
+
+        public GameResult CancelGame(string gameId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public GameResult PauseGame(string gameId, bool pause)
+        {
+            throw new NotImplementedException();
+        }
+
+        public GameStatus GetCurrentBoardStatus(string gameId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public GameStatus GetCompletedBoard(string gameId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public GameResult SetBoardValue(string gameId, BoardMove value, bool checkValue)
+        {
+            throw new NotImplementedException();
+        }
+
+        public List<int> GetPossibleBoardValues(string id, BoardMove pos)
+        {
+            throw new NotImplementedException();
+        }
+
+        public BoardMove GetPossibleBoardMove(string id)
+        {
+            throw new NotImplementedException();
+        }
     }
+
+#endregion
+
 }
