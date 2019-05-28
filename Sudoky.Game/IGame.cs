@@ -51,11 +51,15 @@ namespace GEB.Sudoku
     public class GameStatus : GameError
     {
         public String GameId { get; set; }
-        public int[,] Board { get; set; }
+        public GridValueEnum[,] Board { get; set; }
         public String NextPlayerId { get; set; }
         public BoardMove LastMove { get; set; }
         public bool GamePaused { get; set; }
     }
+
+    //make a class that combines config and status
+    //implement CreateNewGame (level of difficulty?)
+    //do research on how a sudoku board is made
 
     public class GameResult : GameError
     {

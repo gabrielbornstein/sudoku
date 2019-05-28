@@ -10,10 +10,13 @@ namespace GEB.Sudoku
         public GridValueEnum value { get; set; }
     }
 
-    public class Game : IGame
+    public class Game //: IGame
     {
         const int gridSize = 3;
         const int boardSize = gridSize * gridSize;
+        const int numGivensEasy = 51;
+        const int numGivensRegular = 56;
+        const int numGivensHard = 61;
         public GridValueEnum[,] board { get; set; } = null;
 
         public delegate void NotifyBoardUpdated(Game sender, BoardUpdatedEventArgs evtArgs);
@@ -170,7 +173,7 @@ namespace GEB.Sudoku
             return (result != -1) ? (GridValueEnum)result : GridValueEnum.Blank;
         }
 
-        private GridValueEnum GetPossibleValuesForRowCol(int row, int col)
+        public GridValueEnum GetPossibleValuesForRowCol(int row, int col)
         {
             GridValueEnum mask = GetBitMaskForRow(row);
             mask = mask | GetBitMaskForColumn(col);
@@ -266,9 +269,139 @@ namespace GEB.Sudoku
             return player;
         }
 
-        public GameStatus CreateNewGame(GameConfig config)
+        public GameStatus CreateNewGame(GameConfig config, int difficulty)
         {
-            throw new NotImplementedException();
+            GameStatus game = new GameStatus
+            {
+                GameId = Guid.NewGuid().ToString(),
+                Board = MakeBoard(difficulty),
+                NextPlayerId = config.Player2Id,
+                LastMove = new BoardMove(),
+                GamePaused = false,
+                Error = GameErrorEnum.OK
+            };
+           
+            return game;
+        }
+
+        public GridValueEnum[,] MakeBoard(int difficulty)
+        {
+                FillBoard();
+                DeleteSpaces(difficulty);
+                return board;               
+        }
+
+        public GridValueEnum[,] FillBoard()
+        {
+            Random rnd = new Random();
+            for (int i = 0; i < boardSize; i++)
+            {
+                List<GridValueEnum> possibleValues = new List<GridValueEnum>();
+                GridValueEnum possibleValuesMask = GetPossibleValuesForRowCol(0, i);
+                for (int k = 1; k < boardSize + 1; k++)
+                {
+                    if (((int)possibleValuesMask & (1 << k)) != 0)
+                    {
+                        possibleValues.Add((GridValueEnum)(1 << k));
+                    }
+                }
+                    int r = rnd.Next(possibleValues.Count);
+                    board[0, i] = possibleValues[r];
+                    possibleValues.Clear(); 
+            }
+            ShiftBoard(3, 1);
+            ShiftBoard(3, 2);
+            ShiftBoard(1, 3);
+            ShiftBoard(3, 4);
+            ShiftBoard(3, 5);
+            ShiftBoard(1, 6);
+            ShiftBoard(3, 7);
+            ShiftBoard(3, 8);
+            return board;
+        }
+
+        private void ShiftBoard(int ShiftSize, int row)
+        {
+            for (int i = 0; i < boardSize; i++)
+            {
+                if (i + ShiftSize >= boardSize)
+                    board[row, i] = board[row - 1, (i + ShiftSize) % boardSize];
+                else
+                    board[row, i] = board[row - 1, i + ShiftSize];
+            }
+        }
+
+        public GridValueEnum[,] DeleteSpaces(int difficulty)
+        {
+            if (difficulty == 1)
+            {
+                for (int numDeletions = 0; numDeletions < numGivensEasy; numDeletions++)
+                {
+                    DeleteSpace();
+                }
+            }
+
+            if (difficulty == 2)
+            {
+                for (int numDeletions = 0; numDeletions < numGivensRegular; numDeletions++)
+                {
+                    DeleteSpace();
+                }
+            }
+
+            if (difficulty == 3)
+            {
+                for (int numDeletions = 0; numDeletions < numGivensHard; numDeletions++)
+                {
+                    DeleteSpace();
+                }
+            }
+            return board;
+        }
+
+        private void DeleteSpace()
+        {
+
+            GridValueEnum[,] copyBoard = (GridValueEnum[,])board.Clone();
+            int numFails = 0;
+
+            do
+            {
+                PickRandomSpace(out int row, out int col);
+                GridValueEnum originalSpace = board[row, col];
+                board[row, col] = GridValueEnum.Blank;
+
+                SolveEntireBoard();
+
+                if (BoardIsSolved())
+                {
+                    numFails = 0;
+                    copyBoard[row, col] = GridValueEnum.Blank;
+                    board = (GridValueEnum[,])copyBoard.Clone();
+                    return;
+                }
+                else
+                {
+                    numFails++;
+                    board[row, col] = originalSpace;
+                    if (numFails > boardSize)
+                    {
+                        return;
+                    }
+                }
+
+            } while (!BoardIsSolved());
+            return;
+        }
+
+        private void PickRandomSpace(out int row, out int col)
+        {
+            Random random = new Random();
+            do
+            {
+                row = random.Next(0, boardSize - 1);
+                col = random.Next(0, boardSize - 1);
+            } while (board[row, col] == GridValueEnum.Blank);
         }
 
         public GameResult CancelGame(string gameId)
@@ -308,7 +441,5 @@ namespace GEB.Sudoku
 
         #endregion
     }
-
-
-
 }
+
