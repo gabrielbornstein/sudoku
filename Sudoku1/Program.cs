@@ -63,7 +63,7 @@ namespace GEB
         }
         */
             Game game = new Game();
-            GridValueEnum[,] board = game.MakeBoard(1);
+            int[,] board = game.MakeBoard(1);
             for (int i = 0; i < 9; i++)
             {
                 for (int j = 0; j < 9; j++)
@@ -85,6 +85,10 @@ namespace GEB
                 { GridValueEnum.Blank, GridValueEnum.Blank, GridValueEnum.Blank, GridValueEnum.Digit_4, GridValueEnum.Digit_1, GridValueEnum.Digit_9, GridValueEnum.Blank, GridValueEnum.Blank, GridValueEnum.Digit_5 },
                 { GridValueEnum.Blank, GridValueEnum.Blank, GridValueEnum.Blank, GridValueEnum.Blank, GridValueEnum.Digit_8, GridValueEnum.Blank, GridValueEnum.Blank, GridValueEnum.Digit_7, GridValueEnum.Digit_9 },
 };
+            foreach (GridValueEnum value in board1)
+            {
+                Console.WriteLine(value);
+            }
         }
     }
 }

@@ -84,6 +84,52 @@ namespace GEB.Sudoku
             Console.WriteLine("Board {0}", (BoardIsSolved()) ? "Solved" : "Not Solved");
         }
 
+        public GridValueEnum[,] SolveEntireBoard(GridValueEnum[,] board)
+        {
+            int currNumBlanks = 0;
+            int prevNumBlanks = 0;
+            do
+            {
+                prevNumBlanks = currNumBlanks;
+                currNumBlanks = 0;
+
+                for (int i = 0; i < boardSize; i++)
+                {
+                    for (int j = 0; j < boardSize; j++)
+                    {
+                        if (board[i, j] == GridValueEnum.Blank)
+                        {
+                            currNumBlanks++;
+                            GridValueEnum value = GetGridValue(i, j);
+                            if (value == GridValueEnum.Blank)
+                            {
+                                board[i, j] = GetValueForSquare(i, j);
+                            }
+                            else
+                            {
+                                board[i, j] = value;
+                            }
+                            if (board[i, j] != GridValueEnum.Blank)
+                            {
+                                // Notify that the board changed
+                                if (NotifyBoardUpdatedEvent != null)
+                                {
+                                    NotifyBoardUpdatedEvent(this, new BoardUpdatedEventArgs()
+                                    {
+                                        row = i,
+                                        col = j,
+                                        value = board[i, j]
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+            } while (!BoardIsSolved() && currNumBlanks != prevNumBlanks);
+            Console.WriteLine("Board {0}", (BoardIsSolved()) ? "Solved" : "Not Solved");
+            return board;
+        }
+
         public GridValueEnum GetGridValue(int row, int col)
         {
             GridValueEnum mask = GetBitMaskForRow(row);
@@ -211,9 +257,108 @@ namespace GEB.Sudoku
             return ((value & mask) != 0);
         }
 
+        private int CastGridValToInt(GridValueEnum gridValueEnum)
+        {
+            if (gridValueEnum == GridValueEnum.Blank)
+            {
+                return 0;
+            }
+            else if (gridValueEnum == GridValueEnum.Digit_1)
+            {
+                return 1;
+            }
+            else if (gridValueEnum == GridValueEnum.Digit_2)
+            {
+                return 2;
+            }
+            else if (gridValueEnum == GridValueEnum.Digit_3)
+            {
+                return 3;
+            }
+            else if (gridValueEnum == GridValueEnum.Digit_4)
+            {
+                return 4;
+            }
+            else if (gridValueEnum == GridValueEnum.Digit_5)
+            {
+                return 5;
+            }
+            else if (gridValueEnum == GridValueEnum.Digit_6)
+            {
+                return 6;
+            }
+            else if (gridValueEnum == GridValueEnum.Digit_7)
+            {
+                return 7;
+            }
+            else if (gridValueEnum == GridValueEnum.Digit_8)
+            {
+                return 8;
+            }
+            else if (gridValueEnum == GridValueEnum.Digit_9)
+            {
+                return 9;
+            }
+            else
+            {
+                Console.WriteLine("Error: Cannot caste this value");
+                return -1;
+            }
+        }
+
+        private GridValueEnum CastIntToGridValue(int x)
+        {
+            if (x == 0)
+            {
+                return GridValueEnum.Blank;
+            }
+            else if (x == 1)
+            {
+                return GridValueEnum.Digit_1;
+            }
+            else if (x == 2)
+            {
+                return GridValueEnum.Digit_2;
+            }
+            else if (x == 3)
+            {
+                return GridValueEnum.Digit_3;
+            }
+            else if (x == 4)
+            {
+                return GridValueEnum.Digit_4;
+            }
+            else if (x == 5)
+            {
+                return GridValueEnum.Digit_5;
+            }
+            else if (x == 6)
+            {
+                return GridValueEnum.Digit_6;
+            }
+            else if (x == 7)
+            {
+                return GridValueEnum.Digit_7;
+            }
+            else if (x == 8)
+            {
+                return GridValueEnum.Digit_8;
+            }
+            else if (x == 9)
+            {
+                return GridValueEnum.Digit_9;
+            }
+            else
+            {
+                Console.WriteLine("Error: Cannot caste this value");
+                return GridValueEnum.Blank;
+            }
+        }
+
         #region Interface Implementation
 
         public static Dictionary<string, Player> IDPlayerDict = new Dictionary<string, Player>();
+        public static Dictionary<string, GameInstance> IDGameDict = new Dictionary<string, GameInstance>();
 
         public GameResult DeletePlayer(string playerId)
         {
@@ -251,6 +396,12 @@ namespace GEB.Sudoku
             return (IDPlayerDict.TryGetValue(playerId, out tmpPlayer)) ? tmpPlayer : null;
         }
 
+        public GameInstance GetGame(string gameId)
+        {
+            GameInstance tmpGameInstance;
+            return (IDGameDict.TryGetValue(gameId, out tmpGameInstance)) ? tmpGameInstance : null;
+        }
+
         public Player RegisterPlayer(string name)
         {
             Player player = new Player()
@@ -264,31 +415,43 @@ namespace GEB.Sudoku
 
             //generate user ID
             player.PlayerId = Guid.NewGuid().ToString();
-            IDPlayerDict.Add(player.PlayerId, player);
+            IDPlayerDict.TryAdd(player.PlayerId, player);
 
             return player;
         }
 
-        public GameStatus CreateNewGame(GameConfig config, int difficulty)
+        public GameStatus CreateNewGame(GameConfig config)
         {
-            GameStatus game = new GameStatus
+            GameInstance game = new GameInstance
             {
-                GameId = Guid.NewGuid().ToString(),
-                Board = MakeBoard(difficulty),
-                NextPlayerId = config.Player2Id,
-                LastMove = new BoardMove(),
-                GamePaused = false,
-                Error = GameErrorEnum.OK
+                Status = new GameStatus
+                {
+                    Board = MakeBoard(config.Difficulty),
+                    NextPlayerId = config.Player2Id,
+                    LastMove = new BoardMove(),
+                    GamePaused = false,
+                    Error = GameErrorEnum.OK
+                },
+                Config = config,
+                GameId = Guid.NewGuid().ToString()
             };
-           
-            return game;
+            IDGameDict.TryAdd(game.GameId, game);
+            return game.Status;
         }
 
-        public GridValueEnum[,] MakeBoard(int difficulty)
+        public int[,] MakeBoard(int difficulty)
         {
-                FillBoard();
-                DeleteSpaces(difficulty);
-                return board;               
+            FillBoard();
+            DeleteSpaces(difficulty);
+            int[,] intBoard = new int[boardSize, boardSize];
+            for (int i = 0; i < boardSize; i++)
+            {
+                for (int j = 0; j < boardSize; j++)
+                {
+                    intBoard[i, j] = CastGridValToInt(board[i, j]);
+                }
+            }
+            return intBoard;               
         }
 
         public GridValueEnum[,] FillBoard()
@@ -383,7 +546,8 @@ namespace GEB.Sudoku
                 else
                 {
                     numFails++;
-                    board[row, col] = originalSpace;
+                    copyBoard[row,col] = originalSpace;
+                    board = (GridValueEnum[,])copyBoard.Clone();
                     if (numFails > boardSize)
                     {
                         return;
@@ -399,44 +563,190 @@ namespace GEB.Sudoku
             Random random = new Random();
             do
             {
-                row = random.Next(0, boardSize - 1);
-                col = random.Next(0, boardSize - 1);
+                row = random.Next(0, boardSize);
+                col = random.Next(0, boardSize);
             } while (board[row, col] == GridValueEnum.Blank);
+        }
+
+        private void PickRandomBlankSpace(out int row, out int col)
+        {
+            Random random = new Random();
+            do
+            {
+                row = random.Next(0, boardSize);
+                col = random.Next(0, boardSize);
+            } while (board[row, col] != GridValueEnum.Blank);
         }
 
         public GameResult CancelGame(string gameId)
         {
-            throw new NotImplementedException();
+            if (IDGameDict.ContainsKey(gameId))
+            {
+                IDGameDict.Remove(gameId);
+                return new GameResult
+                {
+                    Result = true,
+                    Error = GameErrorEnum.OK
+                };
+            }
+            else
+            {
+                return new GameResult
+                {
+                    Result = false,
+                    Error = GameErrorEnum.InvalidGameID
+                };
+            }
         }
 
         public GameResult PauseGame(string gameId, bool pause)
         {
-            throw new NotImplementedException();
+            GetGame(gameId).Status.GamePaused = pause;
+            GameResult result = new GameResult
+            {
+                Result = true,
+                Error = GameErrorEnum.OK
+            };
+            return result;
         }
 
         public GameStatus GetCurrentBoardStatus(string gameId)
         {
-            throw new NotImplementedException();
+            if (IDGameDict.ContainsKey(gameId))
+            {
+                GameInstance game = GetGame(gameId);
+                game.Status.Error = GameErrorEnum.OK;
+                return game.Status;
+            }
+            else
+            {
+                GameStatus status = new GameStatus
+                {
+                    Error = GameErrorEnum.InvalidGameID
+                };
+                return status;
+            }
         }
 
         public GameStatus GetCompletedBoard(string gameId)
         {
-            throw new NotImplementedException();
+            if (IDGameDict.ContainsKey(gameId))
+            {
+                GameInstance instance = GetGame(gameId);
+
+                GridValueEnum[,] gridValueBoard = new GridValueEnum[boardSize, boardSize];
+                for (int i = 0; i < boardSize; i++)
+                {
+                    for (int j = 0; j < boardSize; j++)
+                    {
+                        gridValueBoard[i, j] = CastIntToGridValue(instance.Config.InitBoard[i, j]);
+                    }
+                }
+
+                gridValueBoard = SolveEntireBoard(gridValueBoard);
+
+                for (int i = 0; i < boardSize; i++)
+                {
+                    for (int j = 0; j < boardSize; j++)
+                    {
+                        instance.Status.Board[i, j] = CastGridValToInt(gridValueBoard[i, j]);
+                    }
+                }
+                return instance.Status;
+            }
+            else
+            {
+                return new GameStatus
+                {
+                    Error = GameErrorEnum.InvalidGameID
+                };
+            }
         }
 
         public GameResult SetBoardValue(string gameId, BoardMove value, bool checkValue)
         {
-            throw new NotImplementedException();
+            if (GetGame(gameId).Config.InitBoard[value.Row, value.Column] == 0)
+            {
+                GetGame(gameId).Status.Board[value.Row, value.Column] = value.Value;
+                return new GameResult
+                {
+                    Result = true,
+                    Error = GameErrorEnum.OK
+                };
+            }
+            else
+            {
+                return new GameResult
+                {
+                    Result = false,
+                    Error = GameErrorEnum.InvalidMove
+                };
+            }
         }
 
-        public List<int> GetPossibleBoardValues(string id, BoardMove pos)
+        public List<int> GetPossibleBoardValues(string gameId, BoardMove pos)
         {
-            throw new NotImplementedException();
+            List<int> list = new List<int>();
+            for (int i = 0; i < boardSize; i++)
+            {
+                for (int j = 0; j < boardSize; j++)
+                {
+                    board[i, j] = CastIntToGridValue(GetGame(gameId).Status.Board[i, j]);
+                }
+            }
+
+            GridValueEnum mask = GetPossibleValuesForRowCol(pos.Row, pos.Column);
+            for (int i = 0; i < boardSize + 1; i++)
+            {
+                if (((int)mask & (1 << i)) != 0)
+                {
+                    list.Add(CastGridValToInt((GridValueEnum)(1 << i)));
+                }
+            }
+            return list;
         }
 
         public BoardMove GetPossibleBoardMove(string id)
         {
-            throw new NotImplementedException();
+            int value = 0;
+            int numTries = 0;
+            int currRow = -1, currCol = -1;
+
+            do
+            {
+                PickRandomBlankSpace(out int row, out int col);
+                currRow = row;
+                currCol = col;
+                value = CastGridValToInt(GetGridValue(row, col));
+
+                if (value == 0)
+                {
+                    value = CastGridValToInt(GetValueForSquare(row, col));
+                }
+
+                if (numTries > numGivensEasy)
+                {
+                    //This Should Be An Announcement
+                    Console.WriteLine("Cannot Find A Solution!");
+                    return new BoardMove
+                    {
+                        Value = value,
+                        Row = -1,
+                        Column = -1,
+                        Error = GameErrorEnum.Timeout
+                    };
+                }
+
+                numTries++;
+            } while (value == 0);
+
+            BoardMove move = new BoardMove
+            {
+                Value = value,
+                Row = currRow,
+                Column = currCol,
+            };
+            return move;
         }
 
         #endregion

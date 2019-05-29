@@ -46,20 +46,23 @@ namespace GEB.Sudoku
         public String Player2Id { get; set; }      // Optional
         public int MaxTimePerMove { get; set; }    // Optional - defaults to 0 or no timeout
         public bool EnableAssistMode { get; set; } // Optional - defaults to false
+        public int Difficulty { get; set; }
     }
 
     public class GameStatus : GameError
     {
-        public String GameId { get; set; }
-        public GridValueEnum[,] Board { get; set; }
+        public int[,] Board { get; set; }
         public String NextPlayerId { get; set; }
         public BoardMove LastMove { get; set; }
         public bool GamePaused { get; set; }
     }
 
-    //make a class that combines config and status
-    //implement CreateNewGame (level of difficulty?)
-    //do research on how a sudoku board is made
+    public class GameInstance
+    {
+        public GameConfig Config { get; set; }
+        public GameStatus Status { get; set; }
+        public String GameId { get; set; }
+    }
 
     public class GameResult : GameError
     {
@@ -83,7 +86,7 @@ namespace GEB.Sudoku
         GameStatus GetCompletedBoard(string gameId);
 
         GameResult SetBoardValue(string gameId, BoardMove value, bool checkValue);
-        List<int> GetPossibleBoardValues(string id, BoardMove pos);
+        List<GridValueEnum> GetPossibleBoardValues(string id, BoardMove pos);
         BoardMove GetPossibleBoardMove(string id);
     }
 }
