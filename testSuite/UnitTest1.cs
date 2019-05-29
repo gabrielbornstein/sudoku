@@ -4,12 +4,31 @@ using GEB.Sudoku;
 namespace Tests
 {
     public class Testing
-    { 
+    {
+        Game myGame = null;
+        GameInstance currGame = null;
+        string currGameId = null;
+
         [SetUp]
         public void Setup()
-        { 
+        {
+            myGame = new Game();
+            Assert.IsNotNull(myGame);
 
+            Player player1 = myGame.RegisterPlayer("Dan The Man");
+            Assert.IsNotNull(player1);
+
+            currGame = myGame.CreateNewGame(new GameConfig()
+            {
+                Player1Id = player1.PlayerId,
+                Difficulty = 1
+            });
+            Assert.IsNotNull(currGame);
+
+            currGameId = currGame.GameId;
+            Assert.IsNotNull(currGameId);
         }
+
 
         [Test]
         public void Test1()
@@ -27,8 +46,8 @@ namespace Tests
                 { GridValueEnum.Blank, GridValueEnum.Blank, GridValueEnum.Blank, GridValueEnum.Blank, GridValueEnum.Digit_8, GridValueEnum.Digit_6, GridValueEnum.Blank, GridValueEnum.Digit_7, GridValueEnum.Digit_9 },
             };
 
-            Game currGame = new Game(board1);
-            GridValueEnum value = currGame.GetGridValue(6, 8);
+            Game game = new Game(board1);
+            GridValueEnum value = game.GetGridValue(6, 8);
             Assert.AreEqual(value, GridValueEnum.Digit_4);
         }
 
@@ -48,8 +67,8 @@ namespace Tests
                 { GridValueEnum.Blank, GridValueEnum.Blank, GridValueEnum.Blank, GridValueEnum.Blank, GridValueEnum.Digit_8, GridValueEnum.Digit_6, GridValueEnum.Blank, GridValueEnum.Digit_7, GridValueEnum.Digit_9 },
             };
 
-            Game currGame = new Game(board1);
-            GridValueEnum value = currGame.GetGridValue(6, 8);
+            Game game = new Game(board1);
+            GridValueEnum value = game.GetGridValue(6, 8);
             Assert.AreEqual(GridValueEnum.Digit_4, value);
         }
         [Test]
@@ -68,8 +87,8 @@ namespace Tests
                 { GridValueEnum.Blank, GridValueEnum.Blank, GridValueEnum.Blank, GridValueEnum.Blank, GridValueEnum.Digit_8, GridValueEnum.Digit_6, GridValueEnum.Blank, GridValueEnum.Digit_7, GridValueEnum.Digit_9 },
             };
 
-            Game currGame = new Game(board1);
-            GridValueEnum value = currGame.GetValueForSquare(0, 5);
+            Game game = new Game(board1);
+            GridValueEnum value = game.GetValueForSquare(0, 5);
             Assert.AreEqual(GridValueEnum.Digit_8, value);
         }
         [Test]
@@ -88,8 +107,8 @@ namespace Tests
                 { GridValueEnum.Blank, GridValueEnum.Blank, GridValueEnum.Blank, GridValueEnum.Blank, GridValueEnum.Digit_8, GridValueEnum.Digit_6, GridValueEnum.Blank, GridValueEnum.Digit_7, GridValueEnum.Digit_9 },
             };
 
-            Game currGame = new Game(board1);
-            GridValueEnum value = currGame.GetValueForSquare(5, 2);
+            Game game = new Game(board1);
+            GridValueEnum value = game.GetValueForSquare(5, 2);
             Assert.AreEqual(GridValueEnum.Digit_3, value);
         }
 
@@ -99,8 +118,6 @@ namespace Tests
         [Test]
         public void TestPlayer()
         {
-            Game myGame = new Game();
-
             Player dk = myGame.RegisterPlayer("David Krinker");
             Player gb = myGame.RegisterPlayer("Gabriel Bornstein");
 
@@ -132,20 +149,43 @@ namespace Tests
         #endregion
 
         [Test]
-        public void TestGame()
+        public void TestPauseGame()
         {
-            Game myGame = new Game();
-            Player player1 = myGame.RegisterPlayer("Dan The Man");
-            GameConfig config1 = new GameConfig()
-            {
-                InitBoard = myGame.MakeBoard(1),
-                Player1Id = player1.PlayerId,
-                Difficulty = 1
-            };
+            // Make sure we can pause the game
+            GameResult result = myGame.PauseGame(currGame.GameId, true);
+            Assert.IsTrue(result.Result);
 
-            myGame.CreateNewGame(config1);
-            //Assert.AreEqual(myGame.);
-
+            currGame = myGame.GetGame(currGame.GameId);
+            Assert.IsNotNull(currGame);
+            Assert.IsTrue(currGame.Status.GamePaused);
         }
+
+        [Test]
+        public void TestUnPauseGame()
+        {
+            // Make sure we can pause the game
+            GameResult result = myGame.PauseGame(currGame.GameId, false);
+            Assert.IsTrue(result.Result);
+
+            currGame = myGame.GetGame(currGame.GameId);
+            Assert.IsNotNull(currGame);
+            Assert.IsFalse(currGame.Status.GamePaused);
+        }
+
+        /*
+         * Cancel Game Test
+         * 1: Cancel a game
+         * 2: GetGame
+         * 3: verify GetGame comes back as null
+         */
+
+        /*
+         * Verify board
+         * 1: GetCompletedBoard
+         * 2: For each empty space in the current board, set the next open space based on the Completed board using SetBoardValue
+         * 3: For each empty space verify the list of GetPossibleBoardValues (and make sure the value to be set is included in the list)
+         * 4: GetGame and verify that the status is finished
+         */
+
     }
 }

@@ -420,7 +420,7 @@ namespace GEB.Sudoku
             return player;
         }
 
-        public GameStatus CreateNewGame(GameConfig config)
+        public GameInstance CreateNewGame(GameConfig config)
         {
             GameInstance game = new GameInstance
             {
@@ -436,7 +436,7 @@ namespace GEB.Sudoku
                 GameId = Guid.NewGuid().ToString()
             };
             IDGameDict.TryAdd(game.GameId, game);
-            return game.Status;  //game.Status Should this return an instance?
+            return game;  //game.Status Should this return an instance?
         }
 
         public int[,] MakeBoard(int difficulty)

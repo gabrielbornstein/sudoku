@@ -55,6 +55,7 @@ namespace GEB.Sudoku
         public String NextPlayerId { get; set; }
         public BoardMove LastMove { get; set; }
         public bool GamePaused { get; set; }
+        public bool GameCompleted { get; set; }
     }
 
     public class GameInstance
@@ -78,7 +79,7 @@ namespace GEB.Sudoku
         GameResult RenamePlayer(string playerId, string playerName);
 
         // Create, Delete or Pause/Start Game
-        GameStatus CreateNewGame(GameConfig config);
+        GameInstance CreateNewGame(GameConfig config);
         GameResult CancelGame(string gameId);
         GameResult PauseGame(string gameId, bool pause);
 
