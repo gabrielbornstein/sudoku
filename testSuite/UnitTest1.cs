@@ -127,5 +127,13 @@ namespace Tests
 
         }
         #endregion
+
+        [Test]
+        public void TestPlayersFunctions()
+        {
+            Game myGame = new Game();
+            Player player1 = myGame.RegisterPlayer("Dan The Man");
+            myGame.DeletePlayer(player1.PlayerId);
+        }
     }
 }
