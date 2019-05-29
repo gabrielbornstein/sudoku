@@ -426,17 +426,20 @@ namespace GEB.Sudoku
             {
                 Status = new GameStatus
                 {
-                    Board = MakeBoard(config.Difficulty),
+                    CurrentBoard = new GameBoard
+                    {
+                        Board = MakeBoard(config.Difficulty)
+                    },
                     NextPlayerId = config.Player2Id,
                     LastMove = new BoardMove(),
                     GamePaused = false,
-                    Error = GameErrorEnum.OK
                 },
                 Config = config,
                 GameId = Guid.NewGuid().ToString()
             };
+            game.Config.InitBoard = (int[,])game.Status.CurrentBoard.Board.Clone();
             IDGameDict.TryAdd(game.GameId, game);
-            return game;  //game.Status Should this return an instance?
+            return game;
         }
 
         public int[,] MakeBoard(int difficulty)
@@ -615,20 +618,24 @@ namespace GEB.Sudoku
             if (IDGameDict.ContainsKey(gameId))
             {
                 GameInstance game = GetGame(gameId);
-                game.Status.Error = GameErrorEnum.OK;
+                game.Status.CurrentBoard.Error = GameErrorEnum.OK;
                 return game.Status;
             }
             else
             {
                 GameStatus status = new GameStatus
                 {
-                    Error = GameErrorEnum.InvalidGameID
+                    CurrentBoard = new GameBoard
+                    {
+                       Error = GameErrorEnum.InvalidGameID
+                    }
                 };
                 return status;
             }
         }
 
-        public GameStatus GetCompletedBoard(string gameId)
+        //This method can be drastically simplified
+        public GameBoard ShowFinishedBoard(string gameId)
         {
             if (IDGameDict.ContainsKey(gameId))
             {
@@ -649,17 +656,22 @@ namespace GEB.Sudoku
                 {
                     for (int j = 0; j < boardSize; j++)
                     {
-                        instance.Status.Board[i, j] = CastGridValToInt(gridValueBoard[i, j]);
+                        instance.Status.CurrentBoard.Board[i, j] = CastGridValToInt(gridValueBoard[i, j]);
                     }
                 }
-                return instance.Status;
+                return instance.Status.CurrentBoard;
             }
             else
             {
-                return new GameStatus
+                //make sure a copy of the board is filled, not actual board
+                GameStatus status = new GameStatus
                 {
-                    Error = GameErrorEnum.InvalidGameID
+                    CurrentBoard = new GameBoard
+                    {
+                        Error = GameErrorEnum.InvalidGameID
+                    }
                 };
+                return status.CurrentBoard;
             }
         }
 
@@ -668,7 +680,7 @@ namespace GEB.Sudoku
             //is the player allowed to make mistakes?
             if (GetGame(gameId).Config.InitBoard[value.Row, value.Column] == 0)
             {
-                GetGame(gameId).Status.Board[value.Row, value.Column] = value.Value;
+                GetGame(gameId).Status.CurrentBoard.Board[value.Row, value.Column] = value.Value;
                 return new GameResult
                 {
                     Result = true,
@@ -692,7 +704,7 @@ namespace GEB.Sudoku
             {
                 for (int j = 0; j < boardSize; j++)
                 {
-                    board[i, j] = CastIntToGridValue(GetGame(gameId).Status.Board[i, j]);
+                    board[i, j] = CastIntToGridValue(GetGame(gameId).Status.CurrentBoard.Board[i, j]);
                 }
             }
 
@@ -718,7 +730,7 @@ namespace GEB.Sudoku
             {
                 for (int j = 0; j < boardSize; j++)
                 {
-                    board[i, j] = CastIntToGridValue(GetGame(gameId).Status.Board[i, j]);
+                    board[i, j] = CastIntToGridValue(GetGame(gameId).Status.CurrentBoard.Board[i, j]);
                 }
             }
 

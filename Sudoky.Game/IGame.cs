@@ -56,7 +56,7 @@ namespace GEB.Sudoku
 
     public class GameStatus
     {
-        GameBoard board { get; set; }
+        public GameBoard CurrentBoard { get; set; }
         public String NextPlayerId { get; set; }
         public BoardMove LastMove { get; set; }
         public bool GamePaused { get; set; }
@@ -89,7 +89,7 @@ namespace GEB.Sudoku
         GameResult PauseGame(string gameId, bool pause);
 
         GameStatus GetCurrentBoardStatus(string gameId);
-        GameStatus GetCompletedBoard(string gameId);
+        GameBoard ShowFinishedBoard(string gameId);
 
         GameResult SetBoardValue(string gameId, BoardMove value, bool checkValue);
         List<int> GetPossibleBoardValues(string id, BoardMove pos);

@@ -172,6 +172,12 @@ namespace Tests
             Assert.IsFalse(currGame.Status.GamePaused);
         }
 
+        [Test]
+        public void TestCancelGame()
+        {
+            myGame.CancelGame(currGame.GameId);
+            Assert.IsNull(myGame.GetGame(currGame.GameId));
+        }
         /*
          * Cancel Game Test
          * 1: Cancel a game
