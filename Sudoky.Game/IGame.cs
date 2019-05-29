@@ -86,7 +86,7 @@ namespace GEB.Sudoku
         GameStatus GetCompletedBoard(string gameId);
 
         GameResult SetBoardValue(string gameId, BoardMove value, bool checkValue);
-        List<GridValueEnum> GetPossibleBoardValues(string id, BoardMove pos);
+        List<int> GetPossibleBoardValues(string id, BoardMove pos);
         BoardMove GetPossibleBoardMove(string id);
     }
 }

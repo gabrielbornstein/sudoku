@@ -10,7 +10,7 @@ namespace GEB.Sudoku
         public GridValueEnum value { get; set; }
     }
 
-    public class Game //: IGame
+    public class Game : IGame
     {
         const int gridSize = 3;
         const int boardSize = gridSize * gridSize;
@@ -436,7 +436,7 @@ namespace GEB.Sudoku
                 GameId = Guid.NewGuid().ToString()
             };
             IDGameDict.TryAdd(game.GameId, game);
-            return game.Status;
+            return game.Status;  //game.Status Should this return an instance?
         }
 
         public int[,] MakeBoard(int difficulty)
@@ -665,6 +665,7 @@ namespace GEB.Sudoku
 
         public GameResult SetBoardValue(string gameId, BoardMove value, bool checkValue)
         {
+            //is the player allowed to make mistakes?
             if (GetGame(gameId).Config.InitBoard[value.Row, value.Column] == 0)
             {
                 GetGame(gameId).Status.Board[value.Row, value.Column] = value.Value;
@@ -706,11 +707,20 @@ namespace GEB.Sudoku
             return list;
         }
 
-        public BoardMove GetPossibleBoardMove(string id)
+        public BoardMove GetPossibleBoardMove(string gameId)
         {
             int value = 0;
             int numTries = 0;
             int currRow = -1, currCol = -1;
+
+            //set board equal to specific game board
+            for (int i = 0; i < boardSize; i++)
+            {
+                for (int j = 0; j < boardSize; j++)
+                {
+                    board[i, j] = CastIntToGridValue(GetGame(gameId).Status.Board[i, j]);
+                }
+            }
 
             do
             {

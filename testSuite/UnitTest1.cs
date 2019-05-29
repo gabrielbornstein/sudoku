@@ -125,15 +125,27 @@ namespace Tests
             dk1 = myGame2.GetPlayer(dk.PlayerId);
             Assert.IsNull(dk1);
 
+            Player player1 = myGame.RegisterPlayer("Dan The Man");
+            myGame.RenamePlayer(player1.PlayerId, "Not Dan");
+            Assert.AreEqual(player1.PlayerName, "Not Dan");
         }
         #endregion
 
         [Test]
-        public void TestPlayersFunctions()
+        public void TestGame()
         {
             Game myGame = new Game();
             Player player1 = myGame.RegisterPlayer("Dan The Man");
-            myGame.DeletePlayer(player1.PlayerId);
+            GameConfig config1 = new GameConfig()
+            {
+                InitBoard = myGame.MakeBoard(1),
+                Player1Id = player1.PlayerId,
+                Difficulty = 1
+            };
+
+            myGame.CreateNewGame(config1);
+            //Assert.AreEqual(myGame.);
+
         }
     }
 }
