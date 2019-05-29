@@ -49,9 +49,14 @@ namespace GEB.Sudoku
         public int Difficulty { get; set; }
     }
 
-    public class GameStatus : GameError
+    public class GameBoard : GameError
     {
         public int[,] Board { get; set; }
+    }
+
+    public class GameStatus
+    {
+        GameBoard board { get; set; }
         public String NextPlayerId { get; set; }
         public BoardMove LastMove { get; set; }
         public bool GamePaused { get; set; }
