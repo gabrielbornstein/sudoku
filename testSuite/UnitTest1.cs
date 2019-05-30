@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using GEB.Sudoku;
+using System.Collections.Generic;
 
 namespace Tests
 {
@@ -175,22 +176,120 @@ namespace Tests
         [Test]
         public void TestCancelGame()
         {
+            Assert.IsNotNull(myGame.GetGame(currGame.GameId));
             myGame.CancelGame(currGame.GameId);
             Assert.IsNull(myGame.GetGame(currGame.GameId));
         }
-        /*
-         * Cancel Game Test
-         * 1: Cancel a game
-         * 2: GetGame
-         * 3: verify GetGame comes back as null
-         */
+
+        [Test]
+        public void TestVerifyBoard()
+        {
+            int[,] currBoard =
+                {
+                { 5, 3, 0, 0, 7, 0, 0, 0, 0 },
+                { 6, 0, 0, 1, 9, 5, 0, 0, 0 },
+                { 0, 9, 8, 0, 0, 0, 0, 6, 0 },
+                { 8, 0, 0, 0, 6, 0, 0, 0, 3 },
+                { 4, 0, 0, 8, 0, 3, 0, 0, 1 },
+                { 7, 0, 0, 0, 2, 0, 0, 0, 6 },
+                { 0, 6, 0, 0, 0, 0, 2, 8, 0 },
+                { 0, 0, 0, 4, 1, 9, 0, 0, 5 },
+                { 0, 0, 0, 0, 8, 0, 0, 7, 9 },
+            };
+            currGame.Config.InitBoard = currBoard;
+            currGame.Status.CurrentBoard.Board = currBoard;
+            int[,] completeBoard =
+                {
+                {5,3,4,6,7,8,9,1,2},
+                {6,7,2,1,9,5,3,4,8},
+                {1,9,8,3,4,2,5,6,7},
+                {8,5,9,7,6,1,4,2,3},
+                {4,2,6,8,5,3,7,9,1},
+                {7,1,3,9,2,4,8,5,6},
+                {9,6,1,5,3,7,2,8,4},
+                {2,8,7,4,1,9,6,3,5},
+                {3,4,5,2,8,6,1,7,9}
+                };
+            GameBoard solvedBoard = myGame.ShowFinishedBoard(currGame.GameId);
+            Assert.AreEqual(solvedBoard.Board, completeBoard);
+            for (int i = 0; i < 9; i++)
+            {
+                for (int j = 0; j < 9; j++)
+                {
+                    BoardMove move = new BoardMove
+                    {
+                        Row = i,
+                        Column = j,
+                        Value = solvedBoard.Board[i, j]
+                    };
+                    myGame.SetBoardValue(currGame.GameId, move, false);
+                }
+            }
+            Assert.AreEqual(currGame.Status.CurrentBoard.Board, completeBoard);
+
+            int[,] badBoard =
+                {
+                {6,3,4,6,7,8,9,1,2},
+                {6,7,2,1,9,5,3,4,8},
+                {1,9,8,3,4,2,5,6,7},
+                {8,5,9,7,6,1,4,2,3},
+                {4,2,6,8,5,3,7,9,1},
+                {7,1,3,9,2,4,8,5,6},
+                {9,6,1,5,3,7,2,8,4},
+                {2,8,7,4,1,9,6,3,5},
+                {3,4,5,2,8,6,1,7,9}
+                };
+
+            for (int i = 0; i < 9; i++)
+            {
+                for (int j = 0; j < 9; j++)
+                {
+                    BoardMove move = new BoardMove
+                    {
+                        Row = i,
+                        Column = j,
+                        Value = badBoard[i,j]
+                    };
+                    myGame.SetBoardValue(currGame.GameId, move, false);
+                }
+            }
+
+            Assert.AreNotEqual(currGame.Status.CurrentBoard, badBoard);
+
+            BoardMove move1 = new BoardMove
+            {
+                Row = 0,
+                Column = 2
+            };
+            int[,] currBoard1 =
+    {
+                { 5, 3, 0, 0, 7, 0, 0, 0, 0 },
+                { 6, 0, 0, 1, 9, 5, 0, 0, 0 },
+                { 0, 9, 8, 0, 0, 0, 0, 6, 0 },
+                { 8, 0, 0, 0, 6, 0, 0, 0, 3 },
+                { 4, 0, 0, 8, 0, 3, 0, 0, 1 },
+                { 7, 0, 0, 0, 2, 0, 0, 0, 6 },
+                { 0, 6, 0, 0, 0, 0, 2, 8, 0 },
+                { 0, 0, 0, 4, 1, 9, 0, 0, 5 },
+                { 0, 0, 0, 0, 8, 0, 0, 7, 9 },
+            };
+            currGame.Status.CurrentBoard.Board = currBoard1;
+            List<int> correctList1 = new List<int>() {1, 2, 4 };
+            List<int> testList1 = myGame.GetPossibleBoardValues(currGame.GameId, move1);
+            Assert.AreEqual(correctList1, testList1);
+
+        }
 
         /*
          * Verify board
-         * 1: GetCompletedBoard
+         * 1: ShowFinishedBoard
          * 2: For each empty space in the current board, set the next open space based on the Completed board using SetBoardValue
          * 3: For each empty space verify the list of GetPossibleBoardValues (and make sure the value to be set is included in the list)
-         * 4: GetGame and verify that the status is finished
+         * 4: GetGame and verify that the status is finished NOT SURE WHAT OR HOW (should be attached to check move?)
+         * Should also test:
+         * GetPossibleBoardMove
+         * GetCurrentBoardStatus
+         * More thorough testing in general
          */
 
     }

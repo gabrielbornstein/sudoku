@@ -84,7 +84,7 @@ namespace GEB.Sudoku
             Console.WriteLine("Board {0}", (BoardIsSolved()) ? "Solved" : "Not Solved");
         }
 
-        public GridValueEnum[,] SolveEntireBoard(GridValueEnum[,] board)
+        public GridValueEnum[,] SolveEntireBoard(GridValueEnum[,] currBoard)
         {
             int currNumBlanks = 0;
             int prevNumBlanks = 0;
@@ -97,19 +97,19 @@ namespace GEB.Sudoku
                 {
                     for (int j = 0; j < boardSize; j++)
                     {
-                        if (board[i, j] == GridValueEnum.Blank)
+                        if (currBoard[i, j] == GridValueEnum.Blank)
                         {
                             currNumBlanks++;
                             GridValueEnum value = GetGridValue(i, j);
                             if (value == GridValueEnum.Blank)
                             {
-                                board[i, j] = GetValueForSquare(i, j);
+                                currBoard[i, j] = GetValueForSquare(i, j);
                             }
                             else
                             {
-                                board[i, j] = value;
+                                currBoard[i, j] = value;
                             }
-                            if (board[i, j] != GridValueEnum.Blank)
+                            if (currBoard[i, j] != GridValueEnum.Blank)
                             {
                                 // Notify that the board changed
                                 if (NotifyBoardUpdatedEvent != null)
@@ -118,7 +118,7 @@ namespace GEB.Sudoku
                                     {
                                         row = i,
                                         col = j,
-                                        value = board[i, j]
+                                        value = currBoard[i, j]
                                     });
                                 }
                             }
@@ -127,7 +127,7 @@ namespace GEB.Sudoku
                 }
             } while (!BoardIsSolved() && currNumBlanks != prevNumBlanks);
             Console.WriteLine("Board {0}", (BoardIsSolved()) ? "Solved" : "Not Solved");
-            return board;
+            return currBoard;
         }
 
         public GridValueEnum GetGridValue(int row, int col)
@@ -634,7 +634,7 @@ namespace GEB.Sudoku
             }
         }
 
-        //This method can be drastically simplified
+        //This method can be simplified
         public GameBoard ShowFinishedBoard(string gameId)
         {
             if (IDGameDict.ContainsKey(gameId))
@@ -649,29 +649,29 @@ namespace GEB.Sudoku
                         gridValueBoard[i, j] = CastIntToGridValue(instance.Config.InitBoard[i, j]);
                     }
                 }
-
+                board = gridValueBoard;
                 gridValueBoard = SolveEntireBoard(gridValueBoard);
-
+                int[,] intBoard = new int[boardSize, boardSize];
                 for (int i = 0; i < boardSize; i++)
                 {
                     for (int j = 0; j < boardSize; j++)
                     {
-                        instance.Status.CurrentBoard.Board[i, j] = CastGridValToInt(gridValueBoard[i, j]);
+                        intBoard[i, j] = CastGridValToInt(gridValueBoard[i, j]);
                     }
                 }
-                return instance.Status.CurrentBoard;
+                return new GameBoard
+                {
+                    Board = intBoard,
+                    Error = GameErrorEnum.OK
+                };
             }
             else
             {
                 //make sure a copy of the board is filled, not actual board
-                GameStatus status = new GameStatus
+                return new GameBoard
                 {
-                    CurrentBoard = new GameBoard
-                    {
-                        Error = GameErrorEnum.InvalidGameID
-                    }
+                    Error = GameErrorEnum.InvalidGameID
                 };
-                return status.CurrentBoard;
             }
         }
 
@@ -733,7 +733,7 @@ namespace GEB.Sudoku
                     board[i, j] = CastIntToGridValue(GetGame(gameId).Status.CurrentBoard.Board[i, j]);
                 }
             }
-
+            
             do
             {
                 PickRandomBlankSpace(out int row, out int col);
