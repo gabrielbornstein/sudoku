@@ -681,6 +681,12 @@ namespace GEB.Sudoku
             if (GetGame(gameId).Config.InitBoard[value.Row, value.Column] == 0)
             {
                 GetGame(gameId).Status.CurrentBoard.Board[value.Row, value.Column] = value.Value;
+                //check if board is finished
+                if (GetGame(gameId).Status.CurrentBoard.Board == ShowFinishedBoard(gameId).Board)
+                    GetGame(gameId).Status.GameCompleted = true;
+                else
+                    GetGame(gameId).Status.GameCompleted = false;
+
                 return new GameResult
                 {
                     Result = true,
