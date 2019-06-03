@@ -21,26 +21,28 @@ namespace SudokuAPI.playerController
             return Json(tmpGame.GetPlayer(playerId));
         }
 
-        [HttpGet("create/{name}")]
+        //needs to have a query added
+        [HttpPost]
         public JsonResult RegisterPlayer(string name)
         {
             Game tmpGame = new Game();
             return Json(tmpGame.RegisterPlayer(name));
         }
 
-        /*
         [HttpDelete("{playerId}")]
-        public void RemovePlayer()
+        public void RemovePlayer(string playerId)
         {
-            GetPlayerInfo(playerId).DeletePlayer();
+            Game tmpGame = new Game();
+            tmpGame.DeletePlayer(playerId);
         }
 
         [HttpPut("{playerId}/rename/{name}")]
-        public JsonResult NamePlayer()
+        public JsonResult NamePlayer(string playerId, string name)
         {
-            RenamePlayer(playerId, name);
+            Game tmpGame = new Game();
+            tmpGame.RenamePlayer(playerId, name);
             return GetPlayerInfo(playerId);
         }
-        */
+
     }
 }

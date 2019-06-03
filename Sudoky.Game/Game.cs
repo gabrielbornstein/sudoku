@@ -677,10 +677,10 @@ namespace GEB.Sudoku
 
         public GameResult SetBoardValue(string gameId, BoardMove value, bool checkValue)
         {
-            //is the player allowed to make mistakes?
             if (GetGame(gameId).Config.InitBoard[value.Row, value.Column] == 0)
             {
                 GetGame(gameId).Status.CurrentBoard.Board[value.Row, value.Column] = value.Value;
+                GetGame(gameId).Status.LastMove = value;
                 //check if board is finished
                 if (GetGame(gameId).Status.CurrentBoard.Board == ShowFinishedBoard(gameId).Board)
                     GetGame(gameId).Status.GameCompleted = true;
