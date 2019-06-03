@@ -43,6 +43,5 @@ namespace SudokuAPI.playerController
             tmpGame.RenamePlayer(playerId, name);
             return GetPlayerInfo(playerId);
         }
-
     }
 }
