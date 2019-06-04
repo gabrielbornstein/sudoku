@@ -62,7 +62,7 @@ namespace GEB
             Console.WriteLine("Set Board: Row {0}, Column {1}, Value = {2}", evtArgs.row, evtArgs.col, evtArgs.value);
         }
         */
-            Game game = new Game();
+            Sudoku.Sudoku game = new Sudoku.Sudoku();
             int[,] board = game.MakeBoard(1);
             for (int i = 0; i < 9; i++)
             {

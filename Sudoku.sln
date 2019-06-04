@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sudoku1", "Sudoku1\Sudoku1.csproj", "{AB2AB946-0414-4F35-8B0C-DC3991985651}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sudoku.Game", "Sudoky.Game\Sudoku.Game.csproj", "{357797C9-24D7-4CD3-9BD4-7C49A2FD1225}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sudoku", "Sudoky.Game\Sudoku.csproj", "{357797C9-24D7-4CD3-9BD4-7C49A2FD1225}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "testSuite", "testSuite\testSuite.csproj", "{802D1853-0FC9-41C4-88AF-82D6F08AC97D}"
 EndProject

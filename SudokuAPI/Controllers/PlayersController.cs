@@ -7,40 +7,36 @@ using GEB.Sudoku;
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
-namespace SudokuAPI.playerController
+namespace SudokuAPI.Controllers
 {
-    [Route("api/sudoku/players")]
+    [Route("api/[controller]")]
     [ApiController]
-    public class PlayersController : Controller
+    public class PlayersController : Microsoft.AspNetCore.Mvc.Controller
     {
         //how do i add query?
         [HttpGet("{playerId}")]
         public JsonResult GetPlayerInfo(string playerId)
         {
-            Game tmpGame = new Game();
-            return Json(tmpGame.GetPlayer(playerId));
+            return Json(Sudoku.GetSudokuService().GetPlayer(playerId));
         }
 
         //needs to have a query added
         [HttpPost]
-        public JsonResult RegisterPlayer(string name)
+        public JsonResult RegisterPlayer([FromBody]string name)
         {
-            Game tmpGame = new Game();
-            return Json(tmpGame.RegisterPlayer(name));
+            return Json(Sudoku.GetSudokuService().RegisterPlayer(name));
         }
 
         [HttpDelete("{playerId}")]
         public void RemovePlayer(string playerId)
         {
-            Game tmpGame = new Game();
-            tmpGame.DeletePlayer(playerId);
+            Sudoku.GetSudokuService().DeletePlayer(playerId);
         }
 
         [HttpPut("{playerId}/rename/{name}")]
         public JsonResult NamePlayer(string playerId, string name)
         {
-            Game tmpGame = new Game();
-            tmpGame.RenamePlayer(playerId, name);
+            Sudoku.GetSudokuService().RenamePlayer(playerId, name);
             return GetPlayerInfo(playerId);
         }
     }

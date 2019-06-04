@@ -3,31 +3,22 @@ using System.Collections.Generic;
 
 namespace GEB.Sudoku
 {
-    public enum GameErrorEnum
+    [Flags]
+    public enum GridValueEnum
     {
-        OK = 0,
-        InvalidGameID,
-        InvalidMove,
-        InvalidPlayerID,
-        Timeout,
-        OutOfTurn
+        Blank = 1 << 0,
+        Digit_1 = 1 << 1,
+        Digit_2 = 1 << 2,
+        Digit_3 = 1 << 3,
+        Digit_4 = 1 << 4,
+        Digit_5 = 1 << 5,
+        Digit_6 = 1 << 6,
+        Digit_7 = 1 << 7,
+        Digit_8 = 1 << 8,
+        Digit_9 = 1 << 9
     }
 
-    public class GameError
-    {
-        public GameErrorEnum Error { get; set; }
-    }
-
-    public class Player: GameError
-    {
-        public string PlayerId { get; set; }
-        public string PlayerName { get; set; }
-        public int GamesPlayed { get; set; }
-        public int GamesFinished { get; set; }
-        public int Score { get; set; }
-    }
-
-    public class BoardPosition : GameError
+    public class BoardPosition : SudokuError
     {
         public int Row { get; set; }
         public int Column { get; set; }
@@ -39,7 +30,7 @@ namespace GEB.Sudoku
         public String PlayerId { get; set; }
     }
 
-    public class GameConfig : GameError
+    public class GameConfig : SudokuError
     {
         public int[,] InitBoard { get; set; }      // Optional
         public String Player1Id { get; set; }
@@ -49,7 +40,7 @@ namespace GEB.Sudoku
         public int Difficulty { get; set; }
     }
 
-    public class GameBoard : GameError
+    public class GameBoard : SudokuError
     {
         public int[,] Board { get; set; }
     }
@@ -70,19 +61,13 @@ namespace GEB.Sudoku
         public String GameId { get; set; }
     }
 
-    public class GameResult : GameError
+    public class GameResult : SudokuError
     {
         public bool Result { get; set; }
     }
 
     public interface IGame
     {
-        // Player management
-        Player RegisterPlayer(string playerName);
-        Player GetPlayer(string playerId);
-        GameResult DeletePlayer(string playerId);
-        GameResult RenamePlayer(string playerId, string playerName);
-
         // Create, Delete or Pause/Start Game
         GameInstance CreateNewGame(GameConfig config);
         GameResult CancelGame(string gameId);

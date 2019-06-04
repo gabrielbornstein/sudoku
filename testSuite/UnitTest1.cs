@@ -6,14 +6,14 @@ namespace Tests
 {
     public class Testing
     {
-        Game myGame = null;
+        GEB.Sudoku.Sudoku myGame = null;
         GameInstance currGame = null;
         string currGameId = null;
 
         [SetUp]
         public void Setup()
         {
-            myGame = new Game();
+            myGame = new GEB.Sudoku.Sudoku();
             Assert.IsNotNull(myGame);
 
             Player player1 = myGame.RegisterPlayer("Dan The Man");
@@ -47,7 +47,7 @@ namespace Tests
                 { GridValueEnum.Blank, GridValueEnum.Blank, GridValueEnum.Blank, GridValueEnum.Blank, GridValueEnum.Digit_8, GridValueEnum.Digit_6, GridValueEnum.Blank, GridValueEnum.Digit_7, GridValueEnum.Digit_9 },
             };
 
-            Game game = new Game(board1);
+            GEB.Sudoku.Sudoku game = new GEB.Sudoku.Sudoku(board1);
             GridValueEnum value = game.GetGridValue(6, 8);
             Assert.AreEqual(value, GridValueEnum.Digit_4);
         }
@@ -68,7 +68,7 @@ namespace Tests
                 { GridValueEnum.Blank, GridValueEnum.Blank, GridValueEnum.Blank, GridValueEnum.Blank, GridValueEnum.Digit_8, GridValueEnum.Digit_6, GridValueEnum.Blank, GridValueEnum.Digit_7, GridValueEnum.Digit_9 },
             };
 
-            Game game = new Game(board1);
+            GEB.Sudoku.Sudoku game = new GEB.Sudoku.Sudoku(board1);
             GridValueEnum value = game.GetGridValue(6, 8);
             Assert.AreEqual(GridValueEnum.Digit_4, value);
         }
@@ -88,7 +88,7 @@ namespace Tests
                 { GridValueEnum.Blank, GridValueEnum.Blank, GridValueEnum.Blank, GridValueEnum.Blank, GridValueEnum.Digit_8, GridValueEnum.Digit_6, GridValueEnum.Blank, GridValueEnum.Digit_7, GridValueEnum.Digit_9 },
             };
 
-            Game game = new Game(board1);
+            GEB.Sudoku.Sudoku game = new GEB.Sudoku.Sudoku(board1);
             GridValueEnum value = game.GetValueForSquare(0, 5);
             Assert.AreEqual(GridValueEnum.Digit_8, value);
         }
@@ -108,7 +108,7 @@ namespace Tests
                 { GridValueEnum.Blank, GridValueEnum.Blank, GridValueEnum.Blank, GridValueEnum.Blank, GridValueEnum.Digit_8, GridValueEnum.Digit_6, GridValueEnum.Blank, GridValueEnum.Digit_7, GridValueEnum.Digit_9 },
             };
 
-            Game game = new Game(board1);
+            GEB.Sudoku.Sudoku game = new GEB.Sudoku.Sudoku(board1);
             GridValueEnum value = game.GetValueForSquare(5, 2);
             Assert.AreEqual(GridValueEnum.Digit_3, value);
         }
@@ -132,7 +132,7 @@ namespace Tests
             Assert.AreNotEqual(dk, gb);
 
             // Try new Game
-            Game myGame2 = new Game();
+            GEB.Sudoku.Sudoku myGame2 = new GEB.Sudoku.Sudoku();
 
             dk1 = myGame2.GetPlayer(dk.PlayerId);
             Assert.AreEqual(dk, dk1);
