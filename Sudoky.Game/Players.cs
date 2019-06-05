@@ -37,12 +37,6 @@ namespace GEB.Sudoku
             };
         }
 
-        public Player GetPlayer(string playerId)
-        {
-            Player tmpPlayer;
-            return (IDPlayerDict.TryGetValue(playerId, out tmpPlayer)) ? tmpPlayer : null;
-        }
-
         public Player RegisterPlayer(string name)
         {
             Player player = new Player()
@@ -60,5 +54,28 @@ namespace GEB.Sudoku
 
             return player;
         }
+
+        public Player GetPlayer(string playerId)
+        {
+            Player pl = GetPlayer(playerId);
+            if (pl != null)
+            {
+                return pl;
+            } else
+            {
+                return new Player()
+                {
+                    Error = (pl != null) ? SudokuErrorEnum.OK : SudokuErrorEnum.InvalidPlayerID,
+                    ErrorDescription = string.Format("Invalid Player ID {0}", playerId)
+                };
+            };
+        }
+
+        private Player GetPlayerInfo(string playerId)
+        {
+            Player tmpPlayer;
+            return (IDPlayerDict.TryGetValue(playerId, out tmpPlayer)) ? tmpPlayer : null;
+        }
+
     }
 }

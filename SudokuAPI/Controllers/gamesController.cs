@@ -15,7 +15,6 @@ namespace SudokuAPI.Controllers
         [HttpPost]
         public JsonResult CreateAGame([FromBody] GameConfig config)
         {
-
             return Json(Sudoku.GetSudokuService().CreateNewGame(config));
         }
 
@@ -26,10 +25,10 @@ namespace SudokuAPI.Controllers
         }
 
         // Possible Actions: pause | play
-        [HttpPut("{gameId}/action/{action}")]
-        public JsonResult PauseOrPlayGame(string gameId, string action)
+        [HttpPut("{gameId}/action/{pauseOrPlayAction}")]
+        public JsonResult PauseOrPlayGame(string gameId, string pauseOrPlayAction)
         {
-            return Json(Sudoku.GetSudokuService().PauseGame(gameId, (action.ToLower() == "pause")));
+            return Json(Sudoku.GetSudokuService().PauseGame(gameId, (pauseOrPlayAction.ToLower() == "pause")));
         }
 
         [HttpGet("{gameId}/status")]
