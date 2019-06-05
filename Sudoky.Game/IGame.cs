@@ -29,6 +29,11 @@ namespace GEB.Sudoku
         public List<int> PossibleValues { get; set; }
     }
 
+    public class GameList : SudokuError
+    {
+        public List<String> Games { get; set; }
+    }
+
     public class BoardMove : BoardPosition
     {
         public int Value { get; set; }
@@ -78,6 +83,8 @@ namespace GEB.Sudoku
         GameInstance CreateNewGame(GameConfig config);
         GameResult CancelGame(string gameId);
         GameResult PauseGame(string gameId, bool pause);
+
+        GameList GamesByPlayer(string playerId);
 
         GameStatus GetCurrentBoardStatus(string gameId);
         GameBoard ShowFinishedBoard(string gameId);

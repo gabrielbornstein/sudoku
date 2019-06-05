@@ -120,6 +120,25 @@ namespace GEB.Sudoku
             }
         }
 
+        public GameList GamesByPlayer(string playerId)
+        {
+            List<String> list = new List<string>();
+            foreach(var game in gamesRepo.Values)
+            {
+                if(game.Config.Player1Id == playerId ||
+                    (game.Config.Player2Id != null && game.Config.Player2Id == playerId))
+                {
+                    list.Add(game.GameId);
+                }
+            }
+
+            return new GameList()
+            {
+                Error = SudokuErrorEnum.OK,
+                Games = list
+            };
+        }
+
         public GameStatus GetCurrentBoardStatus(string gameId)
         {
             GameInstance instance = GetGame(gameId);

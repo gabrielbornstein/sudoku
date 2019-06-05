@@ -31,6 +31,12 @@ namespace SudokuAPI.Controllers
             return Json(Sudoku.GetSudokuService().PauseGame(gameId, (pauseOrPlayAction.ToLower() == "pause")));
         }
 
+        [HttpGet("player/{playerId}")]
+        public JsonResult GetGamesByPlayerID(string playerId)
+        {
+            return Json(Sudoku.GetSudokuService().GamesByPlayer(playerId));
+        }
+
         [HttpGet("{gameId}/status")]
         public JsonResult CurrentGameStatus(string gameId)
         {
