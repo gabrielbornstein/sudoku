@@ -25,10 +25,11 @@ namespace SudokuAPI.Controllers
             Sudoku.GetSudokuService().CancelGame(gameId);
         }
 
-        [HttpPut("{gameId}/action/{pause|play}")]
-        public JsonResult PauseOrPlayGame(string gameId, bool pause)
+        // Possible Actions: pause | play
+        [HttpPut("{gameId}/action/{action}")]
+        public JsonResult PauseOrPlayGame(string gameId, string action)
         {
-            return Json(Sudoku.GetSudokuService().PauseGame(gameId, pause));
+            return Json(Sudoku.GetSudokuService().PauseGame(gameId, (action.ToLower() == "pause")));
         }
 
         [HttpGet("{gameId}/status")]

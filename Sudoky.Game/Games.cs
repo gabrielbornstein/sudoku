@@ -97,6 +97,7 @@ namespace GEB.Sudoku
         public GameResult PauseGame(string gameId, bool pause)
         {
             GetGame(gameId).Status.GamePaused = pause;
+
             GameResult result = new GameResult
             {
                 Result = true,
