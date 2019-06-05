@@ -47,23 +47,7 @@ namespace SudokuAPI.Controllers
         [HttpPut("{gameId}/move")]
         public JsonResult MakeAMove(string gameId, BoardMove move)
         {
-            //what to do with third parameter
-            if (Sudoku.GetSudokuService().GetGame(gameId).Config.EnableAssistMode == true)
-            {
-                bool listHasValue = false;
-                foreach (int x in Sudoku.GetSudokuService().GetPossibleBoardValues(gameId, move))
-                {
-                    if (x == move.Value)
-                        listHasValue = true;
-                }
-                if (!listHasValue)
-                    return Json(new GameResult
-                    {
-                        Result = false,
-                        Error = SudokuErrorEnum.InvalidMove
-                    });
-            }
-            return Json(Sudoku.GetSudokuService().SetBoardValue(gameId, move, false));
+            return Json(Sudoku.GetSudokuService().SetBoardValue(gameId, move));
         }
 
         [HttpGet("{gameId}/next")]

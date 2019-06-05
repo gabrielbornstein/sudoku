@@ -192,6 +192,7 @@ namespace Tests
                 {
                     GameInstance currGame = Sudoku.GetSudokuService().CreateNewGame(new GameConfig
                                                                 {
+                         Difficulty = (int)DifficultyLevel.Easy,
                                                                 });
 
                     Assert.IsNotNull(Sudoku.GetSudokuService().GetGame(currGame.GameId));
@@ -246,7 +247,7 @@ namespace Tests
                                 Column = j,
                                 Value = solvedBoard.Board[i, j]
                             };
-                    Sudoku.GetSudokuService().SetBoardValue(currGame.GameId, move, false);
+                    Sudoku.GetSudokuService().SetBoardValue(currGame.GameId, move);
                         }
                     }
                     Assert.AreEqual(currGame.Status.CurrentBoard.Board, completeBoard);
@@ -274,7 +275,7 @@ namespace Tests
                                 Column = j,
                                 Value = badBoard[i,j]
                             };
-                    Sudoku.GetSudokuService().SetBoardValue(currGame.GameId, move, false);
+                    Sudoku.GetSudokuService().SetBoardValue(currGame.GameId, move);
                         }
                     }
 
@@ -299,7 +300,7 @@ namespace Tests
                     };
                     currGame.Status.CurrentBoard.Board = currBoard1;
                     List<int> correctList1 = new List<int>() {1, 2, 4 };
-                    List<int> testList1 = Sudoku.GetSudokuService().GetPossibleBoardValues(currGame.GameId, move1);
+                    List<int> testList1 = Sudoku.GetSudokuService().GetPossibleBoardValues(currGame.GameId, move1).PossibleValues;
                     Assert.AreEqual(correctList1, testList1);
                  
                 }

@@ -84,7 +84,8 @@ namespace GEB
             Console.WriteLine("Set Board: Row {0}, Column {1}, Value = {2}", evtArgs.row, evtArgs.col, evtArgs.value);
         }
         */
-            int[,] board = GEB.Sudoku.Sudoku.GetSudokuService().MakeBoard(1);
+            int[,] initBoard = GEB.Sudoku.Sudoku.GetSudokuService().CreateCompletedBoard();
+            int[,] board = GEB.Sudoku.Sudoku.GetSudokuService().DeleteSpaces(initBoard, DifficultyLevel.Easy);
             for (int i = 0; i < 9; i++)
             {
                 for (int j = 0; j < 9; j++)

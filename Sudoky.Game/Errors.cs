@@ -9,7 +9,9 @@ namespace GEB.Sudoku
         InvalidMove,
         InvalidPlayerID,
         Timeout,
-        OutOfTurn
+        OutOfTurn,
+        InternalError,
+        InitialBoardValueCannotChange
     }
 
     public class SudokuError

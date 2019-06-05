@@ -24,6 +24,11 @@ namespace GEB.Sudoku
         public int Column { get; set; }
     }
 
+    public class PossibleBoardValues : SudokuError
+    {
+        public List<int> PossibleValues { get; set; }
+    }
+
     public class BoardMove : BoardPosition
     {
         public int Value { get; set; }
@@ -33,6 +38,7 @@ namespace GEB.Sudoku
     public class GameConfig : SudokuError
     {
         public int[,] InitBoard { get; set; }      // Optional
+        public int[,] CompletedBoard { get; set; }
         public String Player1Id { get; set; }
         public String Player2Id { get; set; }      // Optional
         public int MaxTimePerMove { get; set; }    // Optional - defaults to 0 or no timeout
@@ -76,8 +82,8 @@ namespace GEB.Sudoku
         GameStatus GetCurrentBoardStatus(string gameId);
         GameBoard ShowFinishedBoard(string gameId);
 
-        GameResult SetBoardValue(string gameId, BoardMove value, bool checkValue);
-        List<int> GetPossibleBoardValues(string id, BoardMove pos);
+        GameResult SetBoardValue(string gameId, BoardMove value);
+        PossibleBoardValues GetPossibleBoardValues(string id, BoardMove pos);
         BoardMove GetPossibleBoardMove(string id);
     }
 }

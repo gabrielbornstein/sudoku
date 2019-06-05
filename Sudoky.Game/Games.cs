@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace GEB.Sudoku
 {
@@ -9,6 +10,13 @@ namespace GEB.Sudoku
         public int row { get; set; }
         public int col { get; set; }
         public GridValueEnum value { get; set; }
+    }
+
+    public enum DifficultyLevel
+    {
+        Easy = 1,
+        Medium =2,
+        Hard = 3
     }
 
     public partial class Sudoku : IGame
@@ -51,7 +59,8 @@ namespace GEB.Sudoku
 
         public GameInstance CreateNewGame(GameConfig config)
         {
-            int[,] board = CreateEmptyBoard();
+            config.CompletedBoard = CreateCompletedBoard();
+            config.InitBoard = DeleteSpaces(config.CompletedBoard, (DifficultyLevel)config.Difficulty);
 
             GameInstance game = new GameInstance
             {
@@ -59,23 +68,25 @@ namespace GEB.Sudoku
                 {
                     CurrentBoard = new GameBoard
                     {
-                        Board = MakeBoard(config.Difficulty)
+                        Board = CloneBoard(config.InitBoard)
                     },
-                    NextPlayerId = config.Player2Id,
-                    LastMove = new BoardMove(),
+                    NextPlayerId = config.Player1Id,
+                    LastMove = null,
                     GamePaused = false,
+                    GameCompleted = false,
                 },
                 Config = config,
                 GameId = Guid.NewGuid().ToString()
             };
-            game.Config.InitBoard = CloneBoard((int[,])game.Status.CurrentBoard.Board);
             gamesRepo.TryAdd(game.GameId, game);
+
             return game;
         }
 
         public GameResult CancelGame(string gameId)
         {
-            if (gamesRepo.ContainsKey(gameId))
+            GameInstance instance = GetGame(gameId);
+            if (instance != null)
             {
                 gamesRepo.Remove(gameId);
                 return new GameResult
@@ -96,152 +107,199 @@ namespace GEB.Sudoku
 
         public GameResult PauseGame(string gameId, bool pause)
         {
-            GetGame(gameId).Status.GamePaused = pause;
-
-            GameResult result = new GameResult
+            GameInstance instance = GetGame(gameId);
+            if (instance != null)
             {
-                Result = true,
-                Error = SudokuErrorEnum.OK
-            };
-            return result;
-        }
-
-        public GameStatus GetCurrentBoardStatus(string gameId)
-        {
-            if (gamesRepo.ContainsKey(gameId))
-            {
-                GameInstance game = GetGame(gameId);
-                game.Status.CurrentBoard.Error = SudokuErrorEnum.OK;
-                return game.Status;
-            }
-            else
-            {
-                GameStatus status = new GameStatus
-                {
-                    CurrentBoard = new GameBoard
-                    {
-                        Error = SudokuErrorEnum.InvalidGameID
-                    }
-                };
-                return status;
-            }
-        }
-
-        public GameBoard ShowFinishedBoard(string gameId)
-        {
-            if (gamesRepo.ContainsKey(gameId))
-            {
-                GameInstance instance = GetGame(gameId);
-                int[,] intBoard = CloneBoard(instance.Status.CurrentBoard.Board);
-                intBoard = SolveEntireBoard(intBoard);
-                return new GameBoard
-                {
-                    Board = intBoard,
-                    Error = SudokuErrorEnum.OK
-                };
-            }
-            else
-            {
-                //make sure a copy of the board is filled, not actual board
-                return new GameBoard
-                {
-                    Error = SudokuErrorEnum.InvalidGameID
-                };
-            }
-        }
-
-        public GameResult SetBoardValue(string gameId, BoardMove value, bool checkValue)
-        {
-            if (GetGame(gameId).Config.InitBoard[value.Row, value.Column] == 0)
-            {
-                GetGame(gameId).Status.CurrentBoard.Board[value.Row, value.Column] = value.Value;
-                GetGame(gameId).Status.LastMove = value;
-                //check if board is finished
-                if (GetGame(gameId).Status.CurrentBoard.Board == ShowFinishedBoard(gameId).Board)
-                    GetGame(gameId).Status.GameCompleted = true;
-                else
-                    GetGame(gameId).Status.GameCompleted = false;
+                instance.Status.GamePaused = pause;
 
                 return new GameResult
                 {
                     Result = true,
                     Error = SudokuErrorEnum.OK
                 };
-            }
-            else
+            } else
             {
                 return new GameResult
                 {
                     Result = false,
-                    Error = SudokuErrorEnum.InvalidMove
+                    Error = SudokuErrorEnum.InvalidGameID
                 };
             }
         }
 
-        public List<int> GetPossibleBoardValues(string gameId, BoardMove pos)
+        public GameStatus GetCurrentBoardStatus(string gameId)
         {
-            GameInstance g;
-
-            if (gamesRepo.TryGetValue(gameId, out g))
+            GameInstance instance = GetGame(gameId);
+            if (instance != null)
             {
-                List<int> list = GetPossibleValuesForRowCol(g.Status.CurrentBoard.Board, pos.Row, pos.Column);
-                return list;
+                return instance.Status;
             }
             else
             {
-                //what should happen if the value fails?
-                Console.WriteLine("THERE is A PROBLEM HERE");
-                return new List<int> { };
+                return new GameStatus
+                {
+                    CurrentBoard = new GameBoard
+                    {
+                        Error = SudokuErrorEnum.InvalidGameID
+                    }
+                };
+            }
+        }
+
+        public GameBoard ShowFinishedBoard(string gameId)
+        {
+            GameInstance instance = GetGame(gameId);
+            if (instance != null)
+            {
+                if (instance.Config.CompletedBoard != null)
+                {
+                    return new GameBoard
+                    {
+                        Board = instance.Config.CompletedBoard,
+                        Error = SudokuErrorEnum.OK
+                    };
+                } else
+                {
+                    return new GameBoard
+                    {
+                        ErrorDescription = "",
+                        Error = SudokuErrorEnum.InternalError
+                    };
+                }
+            }
+            else
+            {
+                //make sure a copy of the board is filled, not actual board
+                return new GameBoard
+                {
+                    Error = SudokuErrorEnum.InvalidGameID,
+                    ErrorDescription = string.Format("No game found with gameID {0}", gameId)
+                };
+            }
+        }
+
+        public GameResult SetBoardValue(string gameId, BoardMove move)
+        {
+            GameInstance instance = GetGame(gameId);
+            if (instance != null)
+            {
+                if (instance.Config.InitBoard[move.Row, move.Column] == 0)
+                {
+                    bool isValueValid = true;
+                    // maybe check for the correct value
+                    if(instance.Config.EnableAssistMode)
+                    {
+                        List<int> possibleValues = GetPossibleValuesForRowCol(instance.Status.CurrentBoard.Board, move.Row, move.Column);
+                        isValueValid = possibleValues.Contains(move.Value);
+                    }
+                    if(isValueValid)
+                    {
+                        instance.Status.CurrentBoard.Board[move.Row, move.Column] = move.Value;
+                        instance.Status.LastMove = move;
+                        //check if board is finished
+                        if (instance.Status.CurrentBoard.Board == ShowFinishedBoard(gameId).Board)
+                        {
+                            instance.Status.GameCompleted = BoardsAreEqual(instance.Status.CurrentBoard.Board, instance.Config.CompletedBoard);
+                        }
+
+                        return new GameResult
+                        {
+                            Result = true,
+                            Error = SudokuErrorEnum.OK
+                        };
+                    } else
+                    {
+                        return new GameResult
+                        {
+                            Result = false,
+                            Error = SudokuErrorEnum.InvalidMove,
+                            ErrorDescription = "Value is not a valid value"
+                        };
+                    }
+                }
+                else
+                {
+                    return new GameResult
+                    {
+                        Result = false,
+                        Error = SudokuErrorEnum.InitialBoardValueCannotChange
+                    };
+                }
+            }
+            else
+            {
+                //make sure a copy of the board is filled, not actual board
+                return new GameResult
+                {
+                    Error = SudokuErrorEnum.InvalidGameID,
+                    ErrorDescription = string.Format("No game found with gameID {0}", gameId)
+                };
+            }
+        }
+
+        public PossibleBoardValues GetPossibleBoardValues(string gameId, BoardMove pos)
+        {
+            GameInstance instance = GetGame(gameId);
+            if (instance != null)
+            {
+                return new PossibleBoardValues
+                {
+                    Error = SudokuErrorEnum.OK,
+                    PossibleValues = GetPossibleValuesForRowCol(instance.Status.CurrentBoard.Board, pos.Row, pos.Column)
+                };
+            }
+            else
+            {
+                //make sure a copy of the board is filled, not actual board
+                return new PossibleBoardValues
+                {
+                    Error = SudokuErrorEnum.InvalidGameID,
+                    ErrorDescription = string.Format("No game found with gameID {0}", gameId)
+                };
             }
         }
 
         public BoardMove GetPossibleBoardMove(string gameId)
         {
-            int value = 0;
-            int numTries = 0;
-            int currRow = -1, currCol = -1;
-
-            //set board equal to specific game board
-            //THIS WILL CAUSE PROBLEMS HOW DO I CLONE PROPERLY
-            int[,] board = CloneBoard(GetGame(gameId).Status.CurrentBoard.Board);
-
-            do
+            GameInstance instance = GetGame(gameId);
+            if (instance != null)
             {
-                PickRandomBlankSpace(board, out int row, out int col);
-                currRow = row;
-                currCol = col;
-                value = GetValueForRowCol(GetPossibleValuesForRowCol(board, row, col));
-                if (value == 0)
+                var rc = PickRandomBlankSpace(instance.Status.CurrentBoard.Board);
+                return new BoardMove
                 {
-                    value = GetValueForSquare(board, row, col);
-                }
-
-                if (numTries > numGivensEasy)
-                {
-                    //This Should Be An Announcement
-                    Console.WriteLine("Cannot Find A Solution!");
-                    return new BoardMove
-                    {
-                        Value = value,
-                        Row = -1,
-                        Column = -1,
-                        Error = SudokuErrorEnum.Timeout
-                    };
-                }
-
-                numTries++;
-            } while (value == 0);
-
-            BoardMove move = new BoardMove
+                    Row = rc.row,
+                    Column = rc.col,
+                    Value = instance.Config.CompletedBoard[rc.row,rc.col],
+                    Error = SudokuErrorEnum.OK,
+                };
+            }
+            else
             {
-                Value = value,
-                Row = currRow,
-                Column = currCol,
-            };
-            return move;
+                //make sure a copy of the board is filled, not actual board
+                return new BoardMove
+                {
+                    Error = SudokuErrorEnum.InvalidGameID,
+                    ErrorDescription = string.Format("No game found with gameID {0}", gameId)
+                };
+            }
         }
 
         #endregion
+
+        private bool BoardsAreEqual(int[,] board1, int[,] board2)
+        {
+            for (int i = 0; i < boardSize; i++)
+            {
+                for (int j = 0; j < boardSize; j++)
+                {
+                    if (board1[i, j] != board2[i, j])
+                    {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
 
         private int[,] CreateEmptyBoard()
         {
@@ -301,7 +359,7 @@ namespace GEB.Sudoku
                     }
                 }
             } while (!BoardIsSolved(completedBoard) && currNumBlanks != prevNumBlanks);
-            return completedBoard;
+
             return (BoardIsSolved(completedBoard)) ? completedBoard : null;
         }
 
@@ -418,16 +476,9 @@ namespace GEB.Sudoku
             return false;
         }
 
-        public int[,] MakeBoard(int difficulty)
+        public int[,] CreateCompletedBoard()
         {
             int[,] board = new int[boardSize, boardSize];
-            board = FillBoard(board);
-            board = DeleteSpaces(board, difficulty);
-            return board;
-        }
-
-        private int[,] FillBoard(int[,] board)
-        {
             Random rnd = new Random();
             for (int i = 0; i < boardSize; i++)
             {
@@ -459,84 +510,96 @@ namespace GEB.Sudoku
             }
         }
 
-        private int[,] DeleteSpaces(int[,] board, int difficulty)
+        public int[,] DeleteSpaces(int[,] board, DifficultyLevel difficulty)
         {
-            if (difficulty == 1)
+            int totalSpacesToDelete;
+
+            switch(difficulty)
             {
-                for (int numDeletions = 0; numDeletions < numGivensEasy; numDeletions++)
-                {
-                    DeleteSpace(board);
-                }
+                case  DifficultyLevel.Easy:
+                    totalSpacesToDelete = numGivensEasy;
+                    break;
+                case DifficultyLevel.Medium:
+                    totalSpacesToDelete = numGivensRegular;
+                    break;
+                case DifficultyLevel.Hard:
+                    totalSpacesToDelete = numGivensHard;
+                    break;
+                default:
+                    throw new Exception("Unexpected difficulty board level");
             }
 
-            if (difficulty == 2)
-            {
-                for (int numDeletions = 0; numDeletions < numGivensRegular; numDeletions++)
-                {
-                    DeleteSpace(board);
-                }
-            }
-
-            if (difficulty == 3)
-            {
-                for (int numDeletions = 0; numDeletions < numGivensHard; numDeletions++)
-                {
-                    DeleteSpace(board);
-                }
-            }
-            return board;
+            return RemoveSpaces(board, totalSpacesToDelete);
         }
 
-        private void DeleteSpace(int[,] board)
+        private List<BoardPosition> GetRandomBoardPositionList()
         {
-
-            int numFails = 0;
-            int[,] copyBoard = CloneBoard(board);
-            do
+            Random random = new Random(DateTime.Now.Millisecond);
+            List<BoardPosition> boardPositions = new List<BoardPosition>();
+            for (int i = 0; i < boardSize; i++)
             {
-                PickRandomSpace(board, out int row, out int col);
-                int originalSpace = copyBoard[row, col];
-                copyBoard[row, col] = 0;
-
-                copyBoard = SolveEntireBoard(copyBoard);
-
-                if (BoardIsSolved(copyBoard))
+                for (int j = 0; j < boardSize; j++)
                 {
-                    numFails = 0;
-                    board[row, col] = 0;
-                    return;
+                    int index = random.Next(0, boardPositions.Count);
+                    boardPositions.Insert(index, new BoardPosition
+                    {
+                        Row = i,
+                        Column = j
+                    });
+                }
+            }
+            return boardPositions;
+        }
+
+        private int[,] RemoveSpaces(int[,] board, int totalSpacesToDelete)
+        {
+            List<BoardPosition> randomPositions = GetRandomBoardPositionList();
+
+            int[,] copyBoard = CloneBoard(board);
+            for(int index = 0; index < randomPositions.Count && totalSpacesToDelete > 0; index++)
+            {
+                BoardPosition boardPos = randomPositions[index];
+
+                int originalValue = copyBoard[boardPos.Row, boardPos.Column];
+                copyBoard[boardPos.Row, boardPos.Column] = 0;
+
+                if( SolveEntireBoard(copyBoard) != null) { 
+                    totalSpacesToDelete--;
                 }
                 else
                 {
-                    numFails++;
-                    if (numFails > boardSize)
-                    {
-                        return;
-                    }
+                    copyBoard[boardPos.Row, boardPos.Column] = originalValue;
                 }
-
-            } while (!BoardIsSolved(copyBoard));
-            return;
+            }
+            return copyBoard;
         }
 
-        private void PickRandomSpace(int[,] board, out int row, out int col)
+        private (int row, int col) PickRandomSpace(int[,] board)
         {
+            int r, c;
+
             Random random = new Random();
             do
             {
-                row = random.Next(0, boardSize);
-                col = random.Next(0, boardSize);
-            } while (board[row, col] == 0);
+                r = random.Next(0, boardSize);
+                c = random.Next(0, boardSize);
+            } while (board[r, c] == 0);
+
+            return (r, c);
         }
 
-        private void PickRandomBlankSpace(int[,] board, out int row, out int col)
+        private (int row, int col) PickRandomBlankSpace(int[,] board)
         {
+            int r, c;
+
             Random random = new Random();
             do
             {
-                row = random.Next(0, boardSize);
-                col = random.Next(0, boardSize);
-            } while (board[row, col] != 0);
+                r = random.Next(0, boardSize);
+                c = random.Next(0, boardSize);
+            } while (board[r, c] != 0);
+
+            return (r,c);
         }
     }
 }
