@@ -5,13 +5,6 @@ using System.Diagnostics;
 
 namespace GEB.Sudoku
 {
-    public class BoardUpdatedEventArgs : EventArgs
-    {
-        public int row { get; set; }
-        public int col { get; set; }
-        public GridValueEnum value { get; set; }
-    }
-
     public enum DifficultyLevel
     {
         Easy = 1,
