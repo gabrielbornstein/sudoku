@@ -207,6 +207,8 @@ namespace GEB.Sudoku
             do
             {
                 PickRandomBlankSpace(board, out int row, out int col);
+                currRow = row;
+                currCol = col;
                 value = GetValueForRowCol(GetPossibleValuesForRowCol(board, row, col));
                 if (value == 0)
                 {

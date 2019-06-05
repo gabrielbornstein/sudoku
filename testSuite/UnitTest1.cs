@@ -207,7 +207,8 @@ namespace Tests
                         Difficulty = 1,
                         Player1Id = "1234"
                     });
-            int[,] currBoard =
+                    Assert.AreEqual(currGame.Config.InitBoard, currGame.Status.CurrentBoard.Board);
+                    int[,] currBoard =
                         {
                         { 5, 3, 0, 0, 7, 0, 0, 0, 0 },
                         { 6, 0, 0, 1, 9, 5, 0, 0, 0 },
@@ -217,8 +218,8 @@ namespace Tests
                         { 7, 0, 0, 0, 2, 0, 0, 0, 6 },
                         { 0, 6, 0, 0, 0, 0, 2, 8, 0 },
                         { 0, 0, 0, 4, 1, 9, 0, 0, 5 },
-                        { 0, 0, 0, 0, 8, 0, 0, 7, 9 },
-                    };
+                        { 0, 0, 0, 0, 8, 0, 0, 7, 9 }
+                        };
                     currGame.Config.InitBoard = currBoard;
                     currGame.Status.CurrentBoard.Board = currBoard;
                     int[,] completeBoard =
