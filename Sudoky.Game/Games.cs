@@ -41,293 +41,6 @@ namespace GEB.Sudoku
             return svc;
         }
 
-        private GridValueEnum[,] CreateEmptyBoard()
-        {
-            GridValueEnum[,] board = new GridValueEnum[boardSize, boardSize];
-            for (int i = 0; i < boardSize; i++)
-            {
-                for (int j = 0; j < boardSize; j++)
-                {
-                    board[i, j] = GridValueEnum.Blank;
-                }
-            }
-
-            return board;
-        }
-
-        private GridValueEnum[,] CloneBoard(GridValueEnum[,] board)
-        {
-            GridValueEnum[,] clone = new GridValueEnum[boardSize, boardSize];
-            for(int i=0;i<boardSize; i++)
-            {
-                for(int j=0;j<boardSize;j++)
-                {
-                    clone[i, j] = board[i, j];
-                }
-            }
-            return clone;
-        }
-
-        public GridValueEnum[,] SolveEntireBoard(GridValueEnum[,] board)
-        {
-            GridValueEnum[,] completedBoard = CloneBoard(board);
-
-            int currNumBlanks = 0;
-            int prevNumBlanks = 0;
-            do
-            {
-                prevNumBlanks = currNumBlanks;
-                currNumBlanks = 0;
-
-                for (int i = 0; i < boardSize; i++)
-                {
-                    for (int j = 0; j < boardSize; j++)
-                    {
-                        if (completedBoard[i, j] == GridValueEnum.Blank)
-                        {
-                            currNumBlanks++;
-                            GridValueEnum value = GetGridValue(board, i, j);
-                            if (value == GridValueEnum.Blank)
-                            {
-                                completedBoard[i, j] = GetValueForSquare(board, i, j);
-                            }
-                            else
-                            {
-                                completedBoard[i, j] = value;
-                            }
-                        }
-                    }
-                }
-            } while (!BoardIsSolved(board) && currNumBlanks != prevNumBlanks);
-
-            return (BoardIsSolved(board)) ? completedBoard : null;
-        }
-
-        public GridValueEnum GetGridValue(GridValueEnum[,] board, int row, int col)
-        {
-            GridValueEnum mask = GetBitMaskForRow(board, row);
-            mask = mask | GetBitMaskForColumn(board, col);
-            mask = mask | GetBitMaskForGrid(board, row / gridSize, col / gridSize);
-            return GetValueForRowCol(mask);
-        }
-
-        public GridValueEnum GetValueForSquare(GridValueEnum[,] board, int row, int col)
-        {
-            GridValueEnum mask = GetPossibleValuesForRowCol(board, row, col);
-            for (int i = 1; i < boardSize + 1; i++)
-            {
-                if (((int)mask & 1 << i) != 0)
-                {
-                    if (!IsValuePresentInOtherSquares(board, row, col, (GridValueEnum)(1 << i)))
-                    {
-                        return (GridValueEnum)(1 << i);
-                    }
-                }
-            }
-            return GridValueEnum.Blank;
-        }
-
-        private bool BoardIsSolved(GridValueEnum[,] board)
-        {
-            for (int i = 0; i < boardSize; i++)
-            {
-                for (int j = 0; j < boardSize; j++)
-                {
-                    if (board[i, j] == GridValueEnum.Blank)
-                        return false;
-                }
-            }
-            return true;
-        }
-
-        private GridValueEnum GetBitMaskForRow(GridValueEnum[,] board, int row)
-        {
-            GridValueEnum mask = 0;
-            for (int i = 0; i < boardSize; i++)
-            {
-                mask |= board[row, i];
-            }
-            return mask;
-        }
-
-        private GridValueEnum GetBitMaskForColumn(GridValueEnum[,] board, int col)
-        {
-            GridValueEnum mask = 0;
-            for (int i = 0; i < boardSize; i++)
-            {
-                mask |= board[i, col];
-            }
-            return mask;
-        }
-
-        private GridValueEnum GetBitMaskForGrid(GridValueEnum[,] board, int anchorRow, int anchorCol)
-        {
-            GridValueEnum mask = 0;
-            for (int i = 0; i < gridSize; i++)
-            {
-                for (int j = 0; j < gridSize; j++)
-                {
-                    {
-                        mask |= board[(anchorRow * gridSize) + i, (anchorCol * gridSize) + j];
-                    }
-                }
-            }
-            return mask;
-        }
-
-        private GridValueEnum GetValueForRowCol(GridValueEnum currMask)
-        {
-            int result = -1;
-            for (int i = 0; i < boardSize + 1; i++)
-            {
-                if (((int)currMask & (1 << i)) == 0)
-                {
-                    if (result != -1)
-                    {
-                        return GridValueEnum.Blank;
-                    }
-                    result = 1 << i;
-                }
-            }
-            return (result != -1) ? (GridValueEnum)result : GridValueEnum.Blank;
-        }
-
-        public GridValueEnum GetPossibleValuesForRowCol(GridValueEnum[,] board, int row, int col)
-        {
-            GridValueEnum mask = GetBitMaskForRow(board, row);
-            mask = mask | GetBitMaskForColumn(board, col);
-            mask = mask | GetBitMaskForGrid(board, row / gridSize, col / gridSize);
-            mask = ~(mask) & (GridValueEnum)0x3ff;
-            return mask;
-        }
-
-        private bool IsValuePresentInOtherSquares(GridValueEnum[,] board, int row, int col, GridValueEnum value)
-        {
-            for (int i = 0; i < gridSize; i++)
-            {
-                for (int j = 0; j < gridSize; j++)
-                {
-                    int currRow = i + ((row / gridSize) * gridSize);
-                    int currCol = j + ((col / gridSize) * gridSize);
-                    if (!(currRow == row && currCol == col))
-                    {
-                        if (board[currRow, currCol] == GridValueEnum.Blank)
-                        {
-                            GridValueEnum mask = GetPossibleValuesForRowCol(board, currRow, currCol);
-                            if (IsBitSet((int)value, (int)mask))
-                            {
-                                return true;
-                            }
-                        }
-                    }
-                }
-            }
-            return false;
-        }
-
-        private bool IsBitSet(int value, int mask)
-        {
-            return ((value & mask) != 0);
-        }
-
-        private int CastGridValToInt(GridValueEnum gridValueEnum)
-        {
-            if (gridValueEnum == GridValueEnum.Blank)
-            {
-                return 0;
-            }
-            else if (gridValueEnum == GridValueEnum.Digit_1)
-            {
-                return 1;
-            }
-            else if (gridValueEnum == GridValueEnum.Digit_2)
-            {
-                return 2;
-            }
-            else if (gridValueEnum == GridValueEnum.Digit_3)
-            {
-                return 3;
-            }
-            else if (gridValueEnum == GridValueEnum.Digit_4)
-            {
-                return 4;
-            }
-            else if (gridValueEnum == GridValueEnum.Digit_5)
-            {
-                return 5;
-            }
-            else if (gridValueEnum == GridValueEnum.Digit_6)
-            {
-                return 6;
-            }
-            else if (gridValueEnum == GridValueEnum.Digit_7)
-            {
-                return 7;
-            }
-            else if (gridValueEnum == GridValueEnum.Digit_8)
-            {
-                return 8;
-            }
-            else if (gridValueEnum == GridValueEnum.Digit_9)
-            {
-                return 9;
-            }
-            else
-            {
-                Console.WriteLine("Error: Cannot caste this value");
-                return -1;
-            }
-        }
-
-        private GridValueEnum CastIntToGridValue(int x)
-        {
-            if (x == 0)
-            {
-                return GridValueEnum.Blank;
-            }
-            else if (x == 1)
-            {
-                return GridValueEnum.Digit_1;
-            }
-            else if (x == 2)
-            {
-                return GridValueEnum.Digit_2;
-            }
-            else if (x == 3)
-            {
-                return GridValueEnum.Digit_3;
-            }
-            else if (x == 4)
-            {
-                return GridValueEnum.Digit_4;
-            }
-            else if (x == 5)
-            {
-                return GridValueEnum.Digit_5;
-            }
-            else if (x == 6)
-            {
-                return GridValueEnum.Digit_6;
-            }
-            else if (x == 7)
-            {
-                return GridValueEnum.Digit_7;
-            }
-            else if (x == 8)
-            {
-                return GridValueEnum.Digit_8;
-            }
-            else if (x == 9)
-            {
-                return GridValueEnum.Digit_9;
-            }
-            else
-            {
-                Console.WriteLine("Error: Cannot caste this value");
-                return GridValueEnum.Blank;
-            }
-        }
-
         #region Interface Implementation
 
         public GameInstance GetGame(string gameId)
@@ -338,7 +51,7 @@ namespace GEB.Sudoku
 
         public GameInstance CreateNewGame(GameConfig config)
         {
-            GridValueEnum[,] board = CreateEmptyBoard();
+            int[,] board = CreateEmptyBoard();
 
             GameInstance game = new GameInstance
             {
@@ -346,7 +59,7 @@ namespace GEB.Sudoku
                 {
                     CurrentBoard = new GameBoard
                     {
-                        Board = MakeBoard(board, config.Difficulty)
+                        Board = MakeBoard(config.Difficulty)
                     },
                     NextPlayerId = config.Player2Id,
                     LastMove = new BoardMove(),
@@ -355,148 +68,9 @@ namespace GEB.Sudoku
                 Config = config,
                 GameId = Guid.NewGuid().ToString()
             };
-            game.Config.InitBoard = (int[,])game.Status.CurrentBoard.Board.Clone();
+            game.Config.InitBoard = CloneBoard((int[,])game.Status.CurrentBoard.Board);
             gamesRepo.TryAdd(game.GameId, game);
             return game;
-        }
-
-        public int[,] MakeBoard(GridValueEnum[,] board, int difficulty)
-        {
-            FillBoard(board);
-            DeleteSpaces(board, difficulty);
-            int[,] intBoard = new int[boardSize, boardSize];
-            for (int i = 0; i < boardSize; i++)
-            {
-                for (int j = 0; j < boardSize; j++)
-                {
-                    intBoard[i, j] = CastGridValToInt(board[i, j]);
-                }
-            }
-            return intBoard;               
-        }
-
-        public GridValueEnum[,] FillBoard(GridValueEnum[,] board)
-        {
-            Random rnd = new Random();
-            for (int i = 0; i < boardSize; i++)
-            {
-                List<GridValueEnum> possibleValues = new List<GridValueEnum>();
-                GridValueEnum possibleValuesMask = GetPossibleValuesForRowCol(board, 0, i);
-                for (int k = 1; k < boardSize + 1; k++)
-                {
-                    if (((int)possibleValuesMask & (1 << k)) != 0)
-                    {
-                        possibleValues.Add((GridValueEnum)(1 << k));
-                    }
-                }
-                    int r = rnd.Next(possibleValues.Count);
-                    board[0, i] = possibleValues[r];
-                    possibleValues.Clear(); 
-            }
-            ShiftBoard(board, 3, 1);
-            ShiftBoard(board,3, 2);
-            ShiftBoard(board, 1, 3);
-            ShiftBoard(board, 3, 4);
-            ShiftBoard(board, 3, 5);
-            ShiftBoard(board, 1, 6);
-            ShiftBoard(board, 3, 7);
-            ShiftBoard(board,3, 8);
-            return board;
-        }
-
-        private void ShiftBoard(GridValueEnum[,] board, int ShiftSize, int row)
-        {
-            for (int i = 0; i < boardSize; i++)
-            {
-                if (i + ShiftSize >= boardSize)
-                    board[row, i] = board[row - 1, (i + ShiftSize) % boardSize];
-                else
-                    board[row, i] = board[row - 1, i + ShiftSize];
-            }
-        }
-
-        public GridValueEnum[,] DeleteSpaces(GridValueEnum[,] board, int difficulty)
-        {
-            if (difficulty == 1)
-            {
-                for (int numDeletions = 0; numDeletions < numGivensEasy; numDeletions++)
-                {
-                    DeleteSpace(board);
-                }
-            }
-
-            if (difficulty == 2)
-            {
-                for (int numDeletions = 0; numDeletions < numGivensRegular; numDeletions++)
-                {
-                    DeleteSpace(board);
-                }
-            }
-
-            if (difficulty == 3)
-            {
-                for (int numDeletions = 0; numDeletions < numGivensHard; numDeletions++)
-                {
-                    DeleteSpace(board);
-                }
-            }
-            return board;
-        }
-
-        private void DeleteSpace(GridValueEnum[,] board)
-        {
-
-            GridValueEnum[,] copyBoard = (GridValueEnum[,])board.Clone();
-            int numFails = 0;
-
-            do
-            {
-                PickRandomSpace(board, out int row, out int col);
-                GridValueEnum originalSpace = board[row, col];
-                board[row, col] = GridValueEnum.Blank;
-
-                SolveEntireBoard(board);
-
-                if (BoardIsSolved(board))
-                {
-                    numFails = 0;
-                    copyBoard[row, col] = GridValueEnum.Blank;
-                    board = (GridValueEnum[,])copyBoard.Clone();
-                    return;
-                }
-                else
-                {
-                    numFails++;
-                    copyBoard[row,col] = originalSpace;
-                    board = (GridValueEnum[,])copyBoard.Clone();
-                    if (numFails > boardSize)
-                    {
-                        return;
-                    }
-                }
-
-            } while (!BoardIsSolved(board));
-            return;
-        }
-
-        private void PickRandomSpace(GridValueEnum[,] board, out int row, out int col)
-        {
-            Random random = new Random();
-            do
-            {
-                row = random.Next(0, boardSize);
-                col = random.Next(0, boardSize);
-            } while (board[row, col] == GridValueEnum.Blank);
-        }
-
-        private void PickRandomBlankSpace(GridValueEnum[,] board, out int row, out int col)
-        {
-            Random random = new Random();
-            do
-            {
-                row = random.Next(0, boardSize);
-                col = random.Next(0, boardSize);
-            } while (board[row, col] != GridValueEnum.Blank);
         }
 
         public GameResult CancelGame(string gameId)
@@ -545,38 +119,20 @@ namespace GEB.Sudoku
                 {
                     CurrentBoard = new GameBoard
                     {
-                       Error = SudokuErrorEnum.InvalidGameID
+                        Error = SudokuErrorEnum.InvalidGameID
                     }
                 };
                 return status;
             }
         }
 
-        //This method can be simplified
         public GameBoard ShowFinishedBoard(string gameId)
         {
             if (gamesRepo.ContainsKey(gameId))
             {
                 GameInstance instance = GetGame(gameId);
-
-                GridValueEnum[,] gridValueBoard = new GridValueEnum[boardSize, boardSize];
-                for (int i = 0; i < boardSize; i++)
-                {
-                    for (int j = 0; j < boardSize; j++)
-                    {
-                        gridValueBoard[i, j] = CastIntToGridValue(instance.Config.InitBoard[i, j]);
-                    }
-                }
-              
-                gridValueBoard = SolveEntireBoard(gridValueBoard);
-                int[,] intBoard = new int[boardSize, boardSize];
-                for (int i = 0; i < boardSize; i++)
-                {
-                    for (int j = 0; j < boardSize; j++)
-                    {
-                        intBoard[i, j] = CastGridValToInt(gridValueBoard[i, j]);
-                    }
-                }
+                int[,] intBoard = CloneBoard(instance.Status.CurrentBoard.Board);
+                intBoard = SolveEntireBoard(intBoard);
                 return new GameBoard
                 {
                     Board = intBoard,
@@ -625,32 +181,17 @@ namespace GEB.Sudoku
         {
             GameInstance g;
 
-            if(gamesRepo.TryGetValue(gameId, out g)) { 
-
-                List<int> list = new List<int>();
-                for (int i = 0; i < boardSize; i++)
-                {
-                    for (int j = 0; j < boardSize; j++)
-                    {
-                        board[i, j] = CastIntToGridValue(g.Status.CurrentBoard.Board[i, j]);
-                    }
-                }
-
-                GridValueEnum mask = GetPossibleValuesForRowCol(board, pos.Row, pos.Column);
-                for (int i = 0; i < boardSize + 1; i++)
-                {
-                    if (((int)mask & (1 << i)) != 0)
-                    {
-                        list.Add(CastGridValToInt((GridValueEnum)(1 << i)));
-                    }
-
-                }
-                return list;
-            } else
+            if (gamesRepo.TryGetValue(gameId, out g))
             {
-
+                List<int> list = GetPossibleValuesForRowCol(g.Status.CurrentBoard.Board, pos.Row, pos.Column);
+                return list;
             }
-           
+            else
+            {
+                //what should happen if the value fails?
+                Console.WriteLine("THERE is A PROBLEM HERE");
+                return new List<int> { };
+            }
         }
 
         public BoardMove GetPossibleBoardMove(string gameId)
@@ -660,24 +201,16 @@ namespace GEB.Sudoku
             int currRow = -1, currCol = -1;
 
             //set board equal to specific game board
-            for (int i = 0; i < boardSize; i++)
-            {
-                for (int j = 0; j < boardSize; j++)
-                {
-                    board[i, j] = CastIntToGridValue(GetGame(gameId).Status.CurrentBoard.Board[i, j]);
-                }
-            }
-            
+            //THIS WILL CAUSE PROBLEMS HOW DO I CLONE PROPERLY
+            int[,] board = CloneBoard(GetGame(gameId).Status.CurrentBoard.Board);
+
             do
             {
-                PickRandomBlankSpace(out int row, out int col);
-                currRow = row;
-                currCol = col;
-                value = CastGridValToInt(GetGridValue(row, col));
-
+                PickRandomBlankSpace(board, out int row, out int col);
+                value = GetValueForRowCol(GetPossibleValuesForRowCol(board, row, col));
                 if (value == 0)
                 {
-                    value = CastGridValToInt(GetValueForSquare(row, col));
+                    value = GetValueForSquare(board, row, col);
                 }
 
                 if (numTries > numGivensEasy)
@@ -706,6 +239,302 @@ namespace GEB.Sudoku
         }
 
         #endregion
+
+        private int[,] CreateEmptyBoard()
+        {
+            int[,] board = new int[boardSize, boardSize];
+            for (int i = 0; i < boardSize; i++)
+            {
+                for (int j = 0; j < boardSize; j++)
+                {
+                    board[i, j] = 0;
+                }
+            }
+
+            return board;
+        }
+
+        private int[,] CloneBoard(int[,] board)
+        {
+            int[,] clone = new int[boardSize, boardSize];
+            for(int i = 0; i < boardSize; i++)
+            {
+                for (int j = 0; j < boardSize; j++)
+                {
+                    clone[i, j] = board[i, j];
+                }
+            }
+            return clone;
+        }
+
+        public int[,] SolveEntireBoard(int[,] board)
+        {
+            int[,] completedBoard = CloneBoard(board);
+
+            int currNumBlanks = 0;
+            int prevNumBlanks = 0;
+            do
+            {
+                prevNumBlanks = currNumBlanks;
+                currNumBlanks = 0;
+
+                for (int i = 0; i < boardSize; i++)
+                {
+                    for (int j = 0; j < boardSize; j++)
+                    {
+                        if (completedBoard[i, j] == 0)
+                        {
+                            currNumBlanks++;
+                            int value = GetValueForRowCol(GetPossibleValuesForRowCol(completedBoard, i ,j));
+                            if (value == 0)
+                            {
+                                completedBoard[i, j] = GetValueForSquare(completedBoard, i, j);
+                            }
+                            else
+                            {
+                                completedBoard[i, j] = value;
+                            }
+                        }
+                    }
+                }
+            } while (!BoardIsSolved(completedBoard) && currNumBlanks != prevNumBlanks);
+            return completedBoard;
+            return (BoardIsSolved(completedBoard)) ? completedBoard : null;
+        }
+
+        public int GetValueForSquare(int[,] board, int row, int col)
+        {
+            List<int> possibleValues = GetPossibleValuesForRowCol(board, row, col);
+            for (int i = 0; i < possibleValues.Count(); i++)
+            {
+                if (!IsValuePresentInOtherSquares(board, row, col, possibleValues[i]))
+                {
+                    return possibleValues[i];
+                }
+            }
+            return 0;
+        }
+
+        private bool BoardIsSolved(int[,] board)
+        {
+            for (int i = 0; i < boardSize; i++)
+            {
+                for (int j = 0; j < boardSize; j++)
+                {
+                    if (board[i, j] == 0)
+                        return false;
+                }
+            }
+            return true;
+        }
+
+        private List<int> GetBitMaskForRow(int[,] board, ref List<int> list, int row)
+        {
+            for (int col = 0; col < boardSize; col++)
+            {
+                if (board[row, col] != 0)
+                {
+                    list.Remove(board[row, col]);
+                }
+            }
+
+            return list;          
+        }
+
+        private List<int> GetBitMaskForColumn(int[,] board, ref List<int> list, int col)
+        {
+            for (int row = 0; row < boardSize; row++)
+            {
+                if (board[row, col] != 0)
+                {
+                    list.Remove(board[row, col]);
+                }
+            }
+            return list;
+        }
+
+        private List<int> GetBitMaskForGrid(int[,] board, ref List<int> list, int anchorRow, int anchorCol)
+        {
+            for (int i = 0; i < gridSize; i++)
+            {
+                for (int j = 0; j < gridSize; j++)
+                {
+                    {
+                        if (board[(anchorRow * gridSize) + i, (anchorCol * gridSize) + j] != 0)
+                        {
+                            list.Remove(board[(anchorRow * gridSize) + i, (anchorCol * gridSize) + j]);
+                        }
+                    }
+                }
+            }
+            return list;
+        }
+
+        private int GetValueForRowCol(List<int> possibleValues)
+        {
+            if (possibleValues.Count == 1)
+            {
+                return possibleValues[0];
+            }
+            else
+            {
+                return 0;
+            }          
+        }
+
+        public List<int> GetPossibleValuesForRowCol(int[,] board, int row, int col)
+        {
+            List<int> possibleValues = new List<int> {1, 2, 3, 4, 5, 6, 7, 8, 9 };
+            GetBitMaskForRow(board, ref possibleValues, row);
+            GetBitMaskForColumn(board, ref possibleValues, col);
+            GetBitMaskForGrid(board, ref possibleValues, row / gridSize, col / gridSize);
+            return possibleValues;          
+        }
+
+        private bool IsValuePresentInOtherSquares(int[,] board, int row, int col, int value)
+        {
+            for (int i = 0; i < gridSize; i++)
+            {
+                for (int j = 0; j < gridSize; j++)
+                {
+                    int currRow = i + ((row / gridSize) * gridSize);
+                    int currCol = j + ((col / gridSize) * gridSize);
+                    if (!(currRow == row && currCol == col))
+                    {
+                        if (board[currRow, currCol] == 0)
+                        {
+                            List<int> possibleValues = GetPossibleValuesForRowCol(board, currRow, currCol);
+                            if (possibleValues.Contains(value))
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        public int[,] MakeBoard(int difficulty)
+        {
+            int[,] board = new int[boardSize, boardSize];
+            board = FillBoard(board);
+            board = DeleteSpaces(board, difficulty);
+            return board;
+        }
+
+        private int[,] FillBoard(int[,] board)
+        {
+            Random rnd = new Random();
+            for (int i = 0; i < boardSize; i++)
+            {
+                List<int> possibleValues = GetPossibleValuesForRowCol(board, 0, i);
+
+                int r = rnd.Next(possibleValues.Count);
+                board[0, i] = possibleValues[r];
+                possibleValues.Clear();
+            }
+            ShiftBoard(board, 3, 1);
+            ShiftBoard(board, 3, 2);
+            ShiftBoard(board, 1, 3);
+            ShiftBoard(board, 3, 4);
+            ShiftBoard(board, 3, 5);
+            ShiftBoard(board, 1, 6);
+            ShiftBoard(board, 3, 7);
+            ShiftBoard(board, 3, 8);
+            return board;
+        }
+
+        private void ShiftBoard(int[,] board, int ShiftSize, int row)
+        {
+            for (int i = 0; i < boardSize; i++)
+            {
+                if (i + ShiftSize >= boardSize)
+                    board[row, i] = board[row - 1, (i + ShiftSize) % boardSize];
+                else
+                    board[row, i] = board[row - 1, i + ShiftSize];
+            }
+        }
+
+        private int[,] DeleteSpaces(int[,] board, int difficulty)
+        {
+            if (difficulty == 1)
+            {
+                for (int numDeletions = 0; numDeletions < numGivensEasy; numDeletions++)
+                {
+                    DeleteSpace(board);
+                }
+            }
+
+            if (difficulty == 2)
+            {
+                for (int numDeletions = 0; numDeletions < numGivensRegular; numDeletions++)
+                {
+                    DeleteSpace(board);
+                }
+            }
+
+            if (difficulty == 3)
+            {
+                for (int numDeletions = 0; numDeletions < numGivensHard; numDeletions++)
+                {
+                    DeleteSpace(board);
+                }
+            }
+            return board;
+        }
+
+        private void DeleteSpace(int[,] board)
+        {
+
+            int numFails = 0;
+            int[,] copyBoard = CloneBoard(board);
+            do
+            {
+                PickRandomSpace(board, out int row, out int col);
+                int originalSpace = copyBoard[row, col];
+                copyBoard[row, col] = 0;
+
+                copyBoard = SolveEntireBoard(copyBoard);
+
+                if (BoardIsSolved(copyBoard))
+                {
+                    numFails = 0;
+                    board[row, col] = 0;
+                    return;
+                }
+                else
+                {
+                    numFails++;
+                    if (numFails > boardSize)
+                    {
+                        return;
+                    }
+                }
+
+            } while (!BoardIsSolved(copyBoard));
+            return;
+        }
+
+        private void PickRandomSpace(int[,] board, out int row, out int col)
+        {
+            Random random = new Random();
+            do
+            {
+                row = random.Next(0, boardSize);
+                col = random.Next(0, boardSize);
+            } while (board[row, col] == 0);
+        }
+
+        private void PickRandomBlankSpace(int[,] board, out int row, out int col)
+        {
+            Random random = new Random();
+            do
+            {
+                row = random.Next(0, boardSize);
+                col = random.Next(0, boardSize);
+            } while (board[row, col] != 0);
+        }
     }
 }
 

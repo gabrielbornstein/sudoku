@@ -15,47 +15,42 @@ namespace SudokuAPI.Controllers
         [HttpPost]
         public JsonResult CreateAGame([FromBody] GameConfig config)
         {
-            GEB.Sudoku.Sudoku tmpGame = new GEB.Sudoku.Sudoku();
-            return Json(tmpGame.CreateNewGame(config));
+
+            return Json(GEB.Sudoku.Sudoku.GetSudokuService().CreateNewGame(config));
         }
 
         [HttpDelete("{gameId}")]
         public void StopGame(string gameId)
         {
-            GEB.Sudoku.Sudoku tmpGame = new GEB.Sudoku.Sudoku();
-            tmpGame.CancelGame(gameId);
+            GEB.Sudoku.Sudoku.GetSudokuService().CancelGame(gameId);
         }
 
         [HttpPut("{gameId}/action/{pause|play}")]
         public JsonResult PauseOrPlayGame(string gameId, bool pause)
         {
-            GEB.Sudoku.Sudoku tmpGame = new GEB.Sudoku.Sudoku();
-            return Json(tmpGame.PauseGame(gameId, pause));
+            return Json(GEB.Sudoku.Sudoku.GetSudokuService().PauseGame(gameId, pause));
         }
 
         [HttpGet("{gameId}/status")]
         public JsonResult CurrentGameStatus(string gameId)
         {
-            GEB.Sudoku.Sudoku tmpGame = new GEB.Sudoku.Sudoku();
-            return Json(tmpGame.GetGame(gameId).Status);
+            return Json(GEB.Sudoku.Sudoku.GetSudokuService().GetGame(gameId).Status);
         }
 
         [HttpGet("{gameId}/completed")]
         public JsonResult CheckGameCompleted(string gameId)
         {
-            GEB.Sudoku.Sudoku tmpGame = new GEB.Sudoku.Sudoku();
-            return Json(tmpGame.GetGame(gameId).Status.CurrentBoard);
+            return Json(GEB.Sudoku.Sudoku.GetSudokuService().GetGame(gameId).Status.CurrentBoard);
         }
 
         [HttpPut("{gameId}/move")]
         public JsonResult MakeAMove(string gameId, BoardMove move, bool? validate)
         {
-            GEB.Sudoku.Sudoku tmpGame = new GEB.Sudoku.Sudoku();
             //what to do with third parameter
             if (validate == true)
             {
                 bool listHasValue = false;
-                foreach (int x in tmpGame.GetPossibleBoardValues(gameId, move))
+                foreach (int x in GEB.Sudoku.Sudoku.GetSudokuService().GetPossibleBoardValues(gameId, move))
                 {
                     if (x == move.Value)
                         listHasValue = true;
@@ -67,14 +62,13 @@ namespace SudokuAPI.Controllers
                         Error = SudokuErrorEnum.InvalidMove
                     });
             }
-            return Json(tmpGame.SetBoardValue(gameId, move, false));
+            return Json(GEB.Sudoku.Sudoku.GetSudokuService().SetBoardValue(gameId, move, false));
         }
 
         [HttpGet("{gameId}/next")]
         public JsonResult GiveAPossibleMove(string gameId)
         {
-            GEB.Sudoku.Sudoku tmpGame = new GEB.Sudoku.Sudoku();
-            return Json(tmpGame.GetPossibleBoardMove(gameId));
+            return Json(GEB.Sudoku.Sudoku.GetSudokuService().GetPossibleBoardMove(gameId));
         }
     }
 }

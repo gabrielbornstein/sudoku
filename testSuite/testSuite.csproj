@@ -13,6 +13,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Sudoky.Game\Sudoku.Game.csproj" />
+    <ProjectReference Include="..\Sudoky.Game\Sudoku.csproj" />
   </ItemGroup>
 </Project>
