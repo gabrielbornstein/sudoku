@@ -8,4 +8,8 @@
   <ItemGroup>
     <ProjectReference Include="..\Sudoky.Game\Sudoku.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+  <PackageReference Include="Google.Cloud.Firestore" Version="1.0.0-beta19" />
+  </ItemGroup>
 </Project>

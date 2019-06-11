@@ -10,4 +10,7 @@
   <ItemGroup>
     <PackageReference Include="System.Linq" Version="4.3.0" />
   </ItemGroup>
+  <ItemGroup>
+  <PackageReference Include="Google.Cloud.Firestore" Version="1.0.0-beta19" />
+</ItemGroup>
 </Project>

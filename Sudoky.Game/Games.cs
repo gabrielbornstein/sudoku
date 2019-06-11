@@ -2,13 +2,15 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Google.Cloud.Firestore;
+using System.Threading.Tasks;
 
 namespace GEB.Sudoku
 {
     public enum DifficultyLevel
     {
         Easy = 1,
-        Medium =2,
+        Medium = 2,
         Hard = 3
     }
 
@@ -47,7 +49,17 @@ namespace GEB.Sudoku
         public GameInstance GetGame(string gameId)
         {
             GameInstance tmpGameInstance;
-            return (gamesRepo.TryGetValue(gameId, out tmpGameInstance)) ? tmpGameInstance : null;
+            gamesRepo.TryGetValue(gameId, out tmpGameInstance);
+            if (tmpGameInstance == null)
+            {
+                tmpGameInstance = GetGameFromCloud(gameId).Wait();
+                if (tmpGameInstance == null)
+                {
+                    return null;
+                }
+            }
+            return tmpGameInstance;
+            //return (gamesRepo.TryGetValue(gameId, out tmpGameInstance)) ? tmpGameInstance : null;
         }
 
         public GameInstance CreateNewGame(GameConfig config)
@@ -72,7 +84,7 @@ namespace GEB.Sudoku
                 GameId = Guid.NewGuid().ToString()
             };
             gamesRepo.TryAdd(game.GameId, game);
-
+            UpdateCloudGameInstance(game, game.GameId).Wait();
             return game;
         }
 
@@ -82,6 +94,7 @@ namespace GEB.Sudoku
             if (instance != null)
             {
                 gamesRepo.Remove(gameId);
+                DeleteCloudGame(gameId).Wait();
                 return new GameResult
                 {
                     Result = true,
@@ -104,13 +117,14 @@ namespace GEB.Sudoku
             if (instance != null)
             {
                 instance.Status.GamePaused = pause;
-
+                UpdateCloudGameStatus(instance.Status, gameId).Wait();
                 return new GameResult
                 {
                     Result = true,
                     Error = SudokuErrorEnum.OK
                 };
-            } else
+            } 
+            else
             {
                 return new GameResult
                 {
@@ -123,10 +137,10 @@ namespace GEB.Sudoku
         public GameList GamesByPlayer(string playerId)
         {
             List<String> list = new List<string>();
-            foreach(var game in gamesRepo.Values)
+            foreach (var game in gamesRepo.Values)
             {
-                if(game.Config.Player1Id == playerId ||
-                    (game.Config.Player2Id != null && game.Config.Player2Id == playerId))
+                if (game.Config.Player1Id == playerId ||
+                   (game.Config.Player2Id != null && game.Config.Player2Id == playerId))
                 {
                     list.Add(game.GameId);
                 }
@@ -204,7 +218,7 @@ namespace GEB.Sudoku
                         List<int> possibleValues = GetPossibleValuesForRowCol(instance.Status.CurrentBoard.Board, move.Row, move.Column);
                         isValueValid = possibleValues.Contains(move.Value);
                     }
-                    if(isValueValid)
+                    if (isValueValid)
                     {
                         instance.Status.CurrentBoard.Board[move.Row, move.Column] = move.Value;
                         instance.Status.LastMove = move;
@@ -213,13 +227,14 @@ namespace GEB.Sudoku
                         {
                             instance.Status.GameCompleted = BoardsAreEqual(instance.Status.CurrentBoard.Board, instance.Config.CompletedBoard);
                         }
-
+                        UpdateCloudGameStatus(instance.Status, gameId).Wait();
                         return new GameResult
                         {
                             Result = true,
                             Error = SudokuErrorEnum.OK
                         };
-                    } else
+                    } 
+                    else
                     {
                         return new GameResult
                         {
@@ -297,6 +312,42 @@ namespace GEB.Sudoku
         }
 
         #endregion
+
+        private static FirestoreDb InitializeDataBase()
+        {
+            FirestoreDb db = FirestoreDb.Create("sudoku-87c4a");
+            return db;
+        }
+
+        private static async Task UpdateCloudGameStatus(GameStatus status, string gameId)
+        {
+            FirestoreDb db = InitializeDataBase();
+            DocumentReference reference = db.Collection("games").Document(gameId).Collection("statuses").Document("status");
+            await reference.SetAsync(status);
+        }
+
+        private static async Task UpdateCloudGameInstance(GameInstance instance, string gameId)
+        {
+            FirestoreDb db = InitializeDataBase();
+            DocumentReference reference = db.Collection("games").Document(gameId);
+            await reference.SetAsync(instance);
+        }
+
+        private static async Task<GameInstance> GetGameFromCloud(string gameId)
+        {
+            FirestoreDb db = InitializeDataBase();
+            DocumentReference reference = db.Collection("games").Document(gameId);
+            DocumentSnapshot snapshot = await reference.GetSnapshotAsync();
+            GameInstance game = snapshot.ConvertTo<GameInstance>();
+            return game;
+        }
+
+        private static async Task DeleteCloudGame(string gameId)
+        {
+            FirestoreDb db = InitializeDataBase();
+            DocumentReference reference = db.Collection("games").Document(gameId);
+            await reference.DeleteAsync();
+        }
 
         private bool BoardsAreEqual(int[,] board1, int[,] board2)
         {
