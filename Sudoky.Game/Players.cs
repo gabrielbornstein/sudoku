@@ -84,7 +84,7 @@ namespace GEB.Sudoku
             IDPlayerDict.TryGetValue(playerId, out tmpPlayer);
             if (tmpPlayer == null)
             {
-                tmpPlayer = GetCloudPlayer(playerId).Wait();
+                tmpPlayer = GetCloudPlayer(playerId).Result;
             }
             if (tmpPlayer == null)
             {

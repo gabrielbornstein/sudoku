@@ -52,7 +52,7 @@ namespace GEB.Sudoku
             gamesRepo.TryGetValue(gameId, out tmpGameInstance);
             if (tmpGameInstance == null)
             {
-                tmpGameInstance = GetGameFromCloud(gameId).Wait();
+                tmpGameInstance = GetGameFromCloud(gameId).Result;
                 if (tmpGameInstance == null)
                 {
                     return null;
@@ -319,10 +319,17 @@ namespace GEB.Sudoku
             return db;
         }
 
-        private static async Task UpdateCloudGameStatus(GameStatus status, string gameId)
+        public static async Task UpdateCloudGameStatus(GameStatus status, string gameId)
         {
             FirestoreDb db = InitializeDataBase();
-            DocumentReference reference = db.Collection("games").Document(gameId).Collection("statuses").Document("status");
+            DocumentReference reference = db.Collection("statuses").Document(gameId);
+            await reference.SetAsync(status);
+        }
+
+        public static async Task TestFunction(BoardPosition status, string gameId)
+        {
+            FirestoreDb db = InitializeDataBase();
+            DocumentReference reference = db.Collection("statuses").Document(gameId);
             await reference.SetAsync(status);
         }
 
