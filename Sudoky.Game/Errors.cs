@@ -1,4 +1,5 @@
 ﻿using System;
+using Google.Cloud.Firestore;
 
 namespace GEB.Sudoku
 {
@@ -17,6 +18,7 @@ namespace GEB.Sudoku
     public class SudokuError
     {
         public SudokuErrorEnum Error { get; set; }
+
         public String ErrorDescription { get;set;}
 
         public SudokuError() { }

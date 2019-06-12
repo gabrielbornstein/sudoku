@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-
+using Google.Cloud.Firestore;
 namespace GEB.Sudoku
 {
     [Flags]
@@ -18,9 +18,12 @@ namespace GEB.Sudoku
         Digit_9 = 1 << 9
     }
 
+    [FirestoreData]
     public class BoardPosition : SudokuError
     {
+        [FirestoreProperty]
         public int Row { get; set; }
+        [FirestoreProperty]
         public int Column { get; set; }
     }
 
@@ -34,41 +37,62 @@ namespace GEB.Sudoku
         public List<String> Games { get; set; }
     }
 
+    [FirestoreData]
     public class BoardMove : BoardPosition
     {
+        [FirestoreProperty]
         public int Value { get; set; }
+        [FirestoreProperty]
         public String PlayerId { get; set; }
     }
 
+    [FirestoreData]
     public class GameConfig : SudokuError
     {
-        public int[,] InitBoard { get; set; }      // Optional
+        [FirestoreProperty]
+        public int[,] InitBoard { get; set; }
+        [FirestoreProperty]
         public int[,] CompletedBoard { get; set; }
+        [FirestoreProperty]
         public String Player1Id { get; set; }
+        [FirestoreProperty]
         public String Player2Id { get; set; }      // Optional
-        public int MaxTimePerMove { get; set; }    // Optional - defaults to 0 or no timeout
+        [FirestoreProperty]
         public bool EnableAssistMode { get; set; } // Optional - defaults to false
+        [FirestoreProperty]
         public int Difficulty { get; set; }
     }
 
+    [FirestoreData]
     public class GameBoard : SudokuError
     {
+        [FirestoreProperty]
         public int[,] Board { get; set; }
     }
 
+    [FirestoreData]
     public class GameStatus
     {
+        [FirestoreProperty]
         public GameBoard CurrentBoard { get; set; }
+        [FirestoreProperty]
         public String NextPlayerId { get; set; }
+        [FirestoreProperty]
         public BoardMove LastMove { get; set; }
+        [FirestoreProperty]
         public bool GamePaused { get; set; }
+        [FirestoreProperty]
         public bool GameCompleted { get; set; }
     }
 
+    [FirestoreData]
     public class GameInstance
     {
+        [FirestoreProperty]
         public GameConfig Config { get; set; }
+        [FirestoreProperty]
         public GameStatus Status { get; set; }
+        [FirestoreProperty]
         public String GameId { get; set; }
     }
 

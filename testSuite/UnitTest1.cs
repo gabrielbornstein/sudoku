@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using System.Collections.Generic;
+using Google.Cloud.Firestore;
 using GEB.Sudoku;
 
 namespace Tests
@@ -307,13 +308,17 @@ namespace Tests
         [Test]
         public void TestUpdateCloudGameStatus()
         {
-            GameStatus status = new GameStatus
+            GameStatus statusSent = new GameStatus
             {
                 GamePaused = false
             };
-            Sudoku.UpdateCloudGameStatus(status, "1111").Wait();
-            status.GamePaused = true;
-            Sudoku.UpdateCloudGameStatus(status, "1111").Wait();
+            Sudoku.UpdateCloudGameStatus(statusSent, "1111").Wait();
+
+            FirestoreDb db = FirestoreDb.Create("sudoku-87c4a");
+            DocumentReference reference = db.Collection("statuses").Document("1111");
+            DocumentSnapshot snapshot = reference.GetSnapshotAsync().Result;
+            GameStatus statusReturned = snapshot.ConvertTo<GameStatus>();
+            Assert.AreEqual(statusSent, statusReturned);
         }
     }            
 }

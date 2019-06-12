@@ -1,6 +1,7 @@
 ﻿using System;
 using GEB.Sudoku;
 using Google.Cloud.Firestore;
+
 namespace GEB
 {
     class Program
@@ -10,9 +11,54 @@ namespace GEB
             BoardPosition boardPosition = new BoardPosition
             {
                 Row = 0,
-                Column = 1
+                Column = 2
             };
             Sudoku.Sudoku.TestFunction(boardPosition, "1111").Wait();
+            GameStatus statusSent = new GameStatus
+            {
+                GamePaused = true
+            };
+            Sudoku.Sudoku.UpdateCloudGameStatus(statusSent, "1111").Wait();
+
+            FirestoreDb db = FirestoreDb.Create("sudoku-87c4a");
+            DocumentReference reference = db.Collection("statuses").Document("1111");
+            DocumentSnapshot snapshot = reference.GetSnapshotAsync().Result;
+            GameStatus statusReturned = snapshot.ConvertTo<GameStatus>();
+            Console.WriteLine(statusReturned);
+
+            BoardMove move = new BoardMove
+            {
+                Row = 6,
+                Column = 9,
+                Value = 2
+            };
+            GameStatus gameStatus = new GameStatus
+            {
+                LastMove = move,
+
+            };
+            GameConfig config = new GameConfig
+            {
+                Difficulty = 1,
+                Player1Id = "1111",
+
+            };
+            Sudoku.Sudoku.UpdateCloudGameStatus(gameStatus, "1111").Wait();
+            //Sudoku.Sudoku.GetSudokuService().CreateNewGame(config);
+            //Console.WriteLine(Sudoku.Sudoku.GetSudokuService().GetGame("1465ea89-23e5-48db-9d30-87aa7f6ff3a6").ToString());
+
+            //Sudoku.Sudoku.GetSudokuService().RegisterPlayer("Kellyanne");
+            Player player = Sudoku.Sudoku.GetSudokuService().GetPlayer("45718b06-a9e3-4dd0-ab52-23aeaa2e0136");
+            Console.WriteLine(player.PlayerName);
+            Console.WriteLine(player.Score);
+
+            GameInstance gameInstance = new GameInstance
+            {
+                Config = config,
+                Status = gameStatus,
+                GameId = "2222"
+            };
+
         }
     }
 }

@@ -331,6 +331,7 @@ namespace GEB.Sudoku
             FirestoreDb db = InitializeDataBase();
             DocumentReference reference = db.Collection("statuses").Document(gameId);
             await reference.SetAsync(status);
+            Console.WriteLine("Added data succesfully");
         }
 
         private static async Task UpdateCloudGameInstance(GameInstance instance, string gameId)
