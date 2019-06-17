@@ -45,12 +45,11 @@ namespace GEB
             };
             Sudoku.Sudoku.UpdateCloudGameStatus(gameStatus, "1111").Wait();
             //Sudoku.Sudoku.GetSudokuService().CreateNewGame(config);
-            //Console.WriteLine(Sudoku.Sudoku.GetSudokuService().GetGame("1465ea89-23e5-48db-9d30-87aa7f6ff3a6").ToString());
-
+            GameInstance game = Sudoku.Sudoku.GetSudokuService().GetGame("62b1e8b7-4f48-45cf-a663-bada78a02155");
             //Sudoku.Sudoku.GetSudokuService().RegisterPlayer("Kellyanne");
-            Player player = Sudoku.Sudoku.GetSudokuService().GetPlayer("45718b06-a9e3-4dd0-ab52-23aeaa2e0136");
-            Console.WriteLine(player.PlayerName);
-            Console.WriteLine(player.Score);
+            //Player player = Sudoku.Sudoku.GetSudokuService().GetPlayer("45718b06-a9e3-4dd0-ab52-23aeaa2e0136");
+            //Console.WriteLine(player.PlayerName);
+            //Console.WriteLine(player.Score);
 
             GameInstance gameInstance = new GameInstance
             {

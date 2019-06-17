@@ -46,13 +46,66 @@ namespace GEB.Sudoku
         public String PlayerId { get; set; }
     }
 
+    public static class BoardExtensions
+    {
+        public static List<int> ConvertBoardToList(this int[,] board)
+        {
+            List<int> l = new List<int>();
+            for (int i = 0; i < 9; i++)
+            {
+                for (int j = 0; j < 9; j++)
+                {
+                    l.Add(board[i, j]);
+                }
+            }
+            return l;
+        }
+
+        public static int[,] ConvertListToBoard(this List<int> list)
+        {
+            int[,] board = new int[9, 9];
+            for (int i = 0; i < 9; i++)
+            {
+                for (int j = 0; j < 9; j++)
+                {
+                    board[i, j] = list[j + i * 9];
+                }
+            }
+            return board;
+        }
+    }
+
     [FirestoreData]
     public class GameConfig : SudokuError
     {
-        [FirestoreProperty]
         public int[,] InitBoard { get; set; }
         [FirestoreProperty]
+        public List<int> InitBoard2
+        {
+            get
+            {
+                return InitBoard.ConvertBoardToList();
+            }
+            set
+            {
+                InitBoard = value.ConvertListToBoard();
+            }
+        }
+
         public int[,] CompletedBoard { get; set; }
+        [FirestoreProperty]
+        public List<int> CompletedBoard2
+        {
+            get
+            {
+                return CompletedBoard.ConvertBoardToList();
+            }
+            set
+            {
+                CompletedBoard = value.ConvertListToBoard();
+            }
+        }
+
         [FirestoreProperty]
         public String Player1Id { get; set; }
         [FirestoreProperty]
@@ -66,8 +119,19 @@ namespace GEB.Sudoku
     [FirestoreData]
     public class GameBoard : SudokuError
     {
-        [FirestoreProperty]
         public int[,] Board { get; set; }
+        [FirestoreProperty]
+        public List<int> Board2
+        {
+            get
+            {
+                return Board.ConvertBoardToList();
+            }
+            set
+            {
+                Board = value.ConvertListToBoard();
+            }
+        }
     }
 
     [FirestoreData]

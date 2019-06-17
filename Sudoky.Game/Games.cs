@@ -52,7 +52,7 @@ namespace GEB.Sudoku
             gamesRepo.TryGetValue(gameId, out tmpGameInstance);
             if (tmpGameInstance == null)
             {
-                tmpGameInstance = GetGameFromCloud(gameId).Result;
+                //tmpGameInstance = GetGameFromCloud(gameId).Result;
                 if (tmpGameInstance == null)
                 {
                     return null;
@@ -84,7 +84,7 @@ namespace GEB.Sudoku
                 GameId = Guid.NewGuid().ToString()
             };
             gamesRepo.TryAdd(game.GameId, game);
-            UpdateCloudGameInstance(game, game.GameId).Wait();
+            //UpdateCloudGameInstance(game, game.GameId).Wait();
             return game;
         }
 
@@ -94,7 +94,7 @@ namespace GEB.Sudoku
             if (instance != null)
             {
                 gamesRepo.Remove(gameId);
-                DeleteCloudGame(gameId).Wait();
+                //DeleteCloudGame(gameId).Wait();
                 return new GameResult
                 {
                     Result = true,
@@ -117,7 +117,7 @@ namespace GEB.Sudoku
             if (instance != null)
             {
                 instance.Status.GamePaused = pause;
-                UpdateCloudGameStatus(instance.Status, gameId).Wait();
+                //UpdateCloudGameStatus(instance.Status, gameId).Wait();
                 return new GameResult
                 {
                     Result = true,
@@ -227,7 +227,7 @@ namespace GEB.Sudoku
                         {
                             instance.Status.GameCompleted = BoardsAreEqual(instance.Status.CurrentBoard.Board, instance.Config.CompletedBoard);
                         }
-                        UpdateCloudGameStatus(instance.Status, gameId).Wait();
+                        //UpdateCloudGameStatus(instance.Status, gameId).Wait();
                         return new GameResult
                         {
                             Result = true,

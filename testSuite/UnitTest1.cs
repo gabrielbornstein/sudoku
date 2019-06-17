@@ -14,6 +14,7 @@ namespace Tests
         [SetUp]
         public void Setup()
         {
+            System.Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", "/users/gezrab/Projects/sudoku/Sudoku-2075c08d560b.json");
             GameInstance myGame = Sudoku.GetSudokuService().CreateNewGame(new GameConfig() {
                 Difficulty = 1,
                 Player1Id = "1234" });

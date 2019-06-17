@@ -14,7 +14,7 @@ namespace GEB.Sudoku
             Player pl = GetPlayer(playerId);
             if (pl != null)
             {
-                DeleteCloudPlayer(playerId).Wait();
+                //DeleteCloudPlayer(playerId).Wait();
                 IDPlayerDict.Remove(playerId);
             }
 
@@ -31,7 +31,7 @@ namespace GEB.Sudoku
             if (pl != null)
             {
                 pl.PlayerName = playerName;
-                UpdateCloudPlayer(playerId, pl).Wait();
+                //UpdateCloudPlayer(playerId, pl).Wait();
             }
 
             return new GameResult()
@@ -55,7 +55,7 @@ namespace GEB.Sudoku
             //generate user ID
             player.PlayerId = Guid.NewGuid().ToString();
             IDPlayerDict.TryAdd(player.PlayerId, player);
-            UpdateCloudPlayer(player.PlayerId, player).Wait();
+            //UpdateCloudPlayer(player.PlayerId, player).Wait();
 
             return player;
         }
@@ -84,7 +84,7 @@ namespace GEB.Sudoku
             IDPlayerDict.TryGetValue(playerId, out tmpPlayer);
             if (tmpPlayer == null)
             {
-                tmpPlayer = GetCloudPlayer(playerId).Result;
+                //tmpPlayer = GetCloudPlayer(playerId).Result;
             }
             if (tmpPlayer == null)
             {

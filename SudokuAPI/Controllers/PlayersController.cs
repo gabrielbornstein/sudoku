@@ -15,25 +15,29 @@ namespace SudokuAPI.Controllers
     {
         //how do i add query?
         [HttpGet("{playerId}")]
+        [ProducesResponseType(typeof(Player), 200)]
         public JsonResult GetPlayerInfo(string playerId)
         {
             return Json(Sudoku.GetSudokuService().GetPlayer(playerId));
         }
 
         //needs to have a query added
-        [HttpPost]
-        public JsonResult RegisterPlayer([FromBody]string name)
+        [HttpPost("register")]
+        [ProducesResponseType(typeof(Player), 200)]
+        public JsonResult RegisterPlayer([FromQuery] string name)
         {
             return Json(Sudoku.GetSudokuService().RegisterPlayer(name));
         }
 
         [HttpDelete("{playerId}")]
+        [ProducesResponseType(typeof(GameResult), 200)]
         public void RemovePlayer(string playerId)
         {
             Sudoku.GetSudokuService().DeletePlayer(playerId);
         }
 
         [HttpPut("{playerId}/rename/{name}")]
+        [ProducesResponseType(typeof(GameResult), 200)]
         public JsonResult NamePlayer(string playerId, string name)
         {
             Sudoku.GetSudokuService().RenamePlayer(playerId, name);
